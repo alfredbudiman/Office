@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git -c commit.gpgsign=false commit -q -m 'docs: spec desain modul video editor dashboard *)",
+      "Bash(git config *)",
+      "Bash(git -c commit.gpgsign=false commit -q -m 'docs: rencana implementasi Fase 1 \\(fondasi auth/role\\) *)",
+      "Bash(npm -v)",
+      "Bash(npx -v)",
+      "Bash(git --version)"
+    ]
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
+  }
+}
