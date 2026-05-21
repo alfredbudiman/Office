@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Filter, Download } from "lucide-react";
 
 type EditorOpt = { id: string; nama: string };
 
@@ -27,19 +27,19 @@ export function RekapFilter({ editors, from, to }: { editors: EditorOpt[]; from:
   const exportHref = `/rekap/export?${params.toString()}`;
 
   return (
-    <form onSubmit={submit} className="flex flex-wrap items-end gap-3 rounded-lg border p-4">
+    <form onSubmit={submit} className="rounded-xl border border-border bg-card p-4 shadow-card flex flex-wrap items-end gap-3">
       <div className="space-y-1">
         <Label htmlFor="from">Dari</Label>
-        <Input id="from" name="from" type="date" defaultValue={from} />
+        <Input id="from" name="from" type="date" defaultValue={from} className="h-9 rounded-lg" />
       </div>
       <div className="space-y-1">
         <Label htmlFor="to">Sampai</Label>
-        <Input id="to" name="to" type="date" defaultValue={to} />
+        <Input id="to" name="to" type="date" defaultValue={to} className="h-9 rounded-lg" />
       </div>
       <div className="space-y-1">
         <Label htmlFor="editor">Editor</Label>
         <select id="editor" name="editor" defaultValue={params.get("editor") ?? ""}
-          className="h-9 rounded-md border px-2 text-sm">
+          className="h-9 rounded-lg border border-border bg-background px-2.5 text-sm">
           <option value="">Semua</option>
           {editors.map((e) => <option key={e.id} value={e.id}>{e.nama}</option>)}
         </select>
@@ -47,7 +47,7 @@ export function RekapFilter({ editors, from, to }: { editors: EditorOpt[]; from:
       <div className="space-y-1">
         <Label htmlFor="tipe">Tipe</Label>
         <select id="tipe" name="tipe" defaultValue={params.get("tipe") ?? ""}
-          className="h-9 rounded-md border px-2 text-sm">
+          className="h-9 rounded-lg border border-border bg-background px-2.5 text-sm">
           <option value="">Semua</option>
           <option value="monolog">Monolog</option>
           <option value="podcast">Podcast</option>
@@ -55,8 +55,14 @@ export function RekapFilter({ editors, from, to }: { editors: EditorOpt[]; from:
           <option value="clipping">Clipping</option>
         </select>
       </div>
-      <Button type="submit">Terapkan</Button>
-      <a href={exportHref} className="inline-flex h-9 items-center rounded-md border px-3 text-sm">Export CSV</a>
+      <button type="submit" className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-foreground px-3 text-sm font-medium text-background hover:opacity-90 transition-opacity">
+        <Filter size={14} />
+        Terapkan
+      </button>
+      <a href={exportHref} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border px-3 text-sm hover:bg-accent transition-colors">
+        <Download size={14} />
+        Export CSV
+      </a>
     </form>
   );
 }
