@@ -32,7 +32,11 @@ export async function createUser(_prev: unknown, formData: FormData) {
 }
 
 export async function setUserRole(id: string, role: Role) {
-  await requireRole("owner");
+  const actor = await requireRole("owner");
+  // Cegah owner mengunci diri sendiri keluar (turunkan role akun sendiri).
+  if (id === actor.id && role !== "owner") {
+    return { ok: false, error: "Tidak bisa menurunkan role akun sendiri." };
+  }
   const supabase = await createClient();
   const { error } = await supabase.from("profiles").update({ role }).eq("id", id);
   if (error) return { ok: false, error: error.message };
@@ -41,7 +45,11 @@ export async function setUserRole(id: string, role: Role) {
 }
 
 export async function setUserAktif(id: string, aktif: boolean) {
-  await requireRole("owner");
+  const actor = await requireRole("owner");
+  // Cegah owner menonaktifkan akun sendiri (akan terkunci permanen).
+  if (id === actor.id && !aktif) {
+    return { ok: false, error: "Tidak bisa menonaktifkan akun sendiri." };
+  }
   const supabase = await createClient();
   const { error } = await supabase.from("profiles").update({ aktif }).eq("id", id);
   if (error) return { ok: false, error: error.message };

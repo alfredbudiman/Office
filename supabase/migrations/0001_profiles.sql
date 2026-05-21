@@ -16,7 +16,7 @@ alter table public.profiles enable row level security;
 -- Helper: cek apakah user yang login adalah owner
 create or replace function public.is_owner()
 returns boolean
-language sql security definer stable
+language sql security definer stable set search_path = public
 as $$
   select exists (
     select 1 from public.profiles
