@@ -2,26 +2,31 @@ import { requireProfile } from "@/lib/auth";
 import { menuForRole } from "@/lib/roles";
 import { Sidebar } from "@/components/sidebar";
 import { logout } from "@/app/login/actions";
-import { Button } from "@/components/ui/button";
 import { NotifBell } from "@/components/notif-bell";
+import { LogOut } from "lucide-react";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const profile = await requireProfile();
   const items = menuForRole(profile.role);
   return (
-    <div className="flex min-h-screen">
-      <Sidebar items={items} nama={profile.nama} />
-      <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between border-b px-6 py-3">
-          <span className="text-sm capitalize text-muted-foreground">{profile.role}</span>
-          <div className="flex items-center gap-2">
-            <NotifBell />
-            <form action={logout}>
-              <Button variant="ghost" size="sm" type="submit">Keluar</Button>
-            </form>
-          </div>
+    <div className="flex min-h-screen bg-background">
+      <Sidebar items={items} nama={profile.nama} role={profile.role} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-20 flex h-14 items-center justify-end gap-1 border-b border-border bg-background/80 px-6 backdrop-blur-md">
+          <NotifBell />
+          <form action={logout}>
+            <button
+              type="submit"
+              className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4" strokeWidth={2} />
+              <span className="hidden sm:inline">Keluar</span>
+            </button>
+          </form>
         </header>
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1">
+          <div className="mx-auto w-full max-w-6xl px-6 py-8">{children}</div>
+        </main>
       </div>
     </div>
   );
