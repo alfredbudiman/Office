@@ -15,7 +15,11 @@ export function StatusActions({ videoId, actions }: { videoId: string; actions: 
   const needsLink = actions.some((a) => ACTIONS[a].requiresLink);
 
   if (actions.length === 0) {
-    return <p className="text-sm text-muted-foreground">Tidak ada aksi untuk Anda di status ini.</p>;
+    return (
+      <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-card">
+        Tidak ada aksi untuk Anda di status ini.
+      </p>
+    );
   }
 
   function run(action: VideoAction) {
@@ -29,9 +33,9 @@ export function StatusActions({ videoId, actions }: { videoId: string; actions: 
   }
 
   return (
-    <div className="space-y-3 rounded-lg border p-4">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-card">
       {needsLink && (
-        <div className="space-y-1">
+        <div className="mb-3 space-y-1">
           <label className="text-sm font-medium">Link draft / hasil</label>
           <Input value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://..." />
         </div>

@@ -1,12 +1,14 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { getVideo, getDrafts, getComments, getStatusEvents } from "@/lib/videos";
 import { createClient } from "@/lib/supabase/server";
 import { actionsFor, STATUS_LABEL, TYPE_LABEL } from "@/lib/video-workflow";
 import { StatusActions } from "./status-actions";
 import { Comments } from "./comments";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/status-badge";
+import { SectionTitle } from "@/components/ui-kit";
 
 export default async function VideoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -31,53 +33,97 @@ export default async function VideoDetailPage({ params }: { params: Promise<{ id
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <div className="space-y-6 lg:col-span-2">
+        {/* Header */}
         <div>
-          <Link href="/video" className="text-sm text-muted-foreground hover:underline">← Kembali</Link>
-          <div className="mt-2 flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">{video.judul}</h1>
-            <Badge>{STATUS_LABEL[video.status]}</Badge>
+          <Link
+            href="/video"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Kembali
+          </Link>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-semibold tracking-tight">{video.judul}</h1>
+            <StatusBadge status={video.status} />
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {TYPE_LABEL[video.tipe]}
             {video.editor_id ? ` · Editor: ${namaById.get(video.editor_id) ?? "—"}` : " · belum ditugaskan"}
           </p>
           {video.link_source && (
-            <a href={video.link_source} target="_blank" rel="noreferrer"
-              className="mt-2 inline-block text-sm text-blue-600 hover:underline">Link source ↗</a>
+            <a
+              href={video.link_source}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-flex items-center gap-1 text-sm text-brand transition-colors hover:text-brand/80"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Link source
+            </a>
           )}
         </div>
 
+        {/* Status actions card */}
         <StatusActions videoId={video.id} actions={actions} />
 
-        <div className="space-y-2">
-          <h3 className="font-medium">Riwayat Draft</h3>
-          {drafts.length === 0 && <p className="text-sm text-muted-foreground">Belum ada draft.</p>}
-          {drafts.map((d) => (
-            <div key={d.id} className="flex items-center justify-between rounded-md border p-2 text-sm">
-              <span>Draft {d.nomor_draft}</span>
-              <a href={d.link_draft} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">
-                Buka link ↗
-              </a>
-            </div>
-          ))}
+        {/* Draft history card */}
+        <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+          <SectionTitle>Riwayat Draft</SectionTitle>
+          {drafts.length === 0 && (
+            <p className="mt-3 text-sm text-muted-foreground">Belum ada draft.</p>
+          )}
+          {drafts.length > 0 && (
+            <ul className="mt-3 space-y-2">
+              {drafts.map((d) => (
+                <li key={d.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
+                  <span className="text-foreground">Draft {d.nomor_draft}</span>
+                  <a
+                    href={d.link_draft}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-brand transition-colors hover:text-brand/80"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Buka link
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
-        <Comments videoId={video.id} comments={commentView} />
+        {/* Comments card */}
+        <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+          <Comments videoId={video.id} comments={commentView} />
+        </div>
       </div>
 
-      <aside className="space-y-2">
-        <h3 className="font-medium">Timeline Status</h3>
-        <ol className="space-y-2 border-l pl-4">
-          {events.map((e) => (
-            <li key={e.id} className="text-sm">
-              <span className="font-medium">{STATUS_LABEL[e.status_baru]}</span>
-              <span className="block text-xs text-muted-foreground">
-                {new Date(e.created_at).toLocaleString("id-ID")}
-              </span>
-            </li>
-          ))}
-          {events.length === 0 && <li className="text-sm text-muted-foreground">Belum ada perubahan status.</li>}
-        </ol>
+      {/* Timeline aside */}
+      <aside>
+        <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+          <SectionTitle>Timeline Status</SectionTitle>
+          <ol className="mt-4 space-y-4 border-l border-border pl-4">
+            {events.map((e, i) => (
+              <li key={e.id} className="relative">
+                {/* Dot on the timeline */}
+                <span
+                  className={`absolute -left-[1.3125rem] top-0.5 h-2.5 w-2.5 rounded-full border-2 border-background ${
+                    i === 0 ? "bg-brand" : "bg-muted-foreground/40"
+                  }`}
+                />
+                <span className="text-sm font-medium text-foreground">
+                  {STATUS_LABEL[e.status_baru]}
+                </span>
+                <span className="block text-xs text-muted-foreground">
+                  {new Date(e.created_at).toLocaleString("id-ID")}
+                </span>
+              </li>
+            ))}
+            {events.length === 0 && (
+              <li className="text-sm text-muted-foreground">Belum ada perubahan status.</li>
+            )}
+          </ol>
+        </div>
       </aside>
     </div>
   );

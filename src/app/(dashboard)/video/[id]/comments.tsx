@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { addComment } from "../actions";
 import { Button } from "@/components/ui/button";
+import { SectionTitle } from "@/components/ui-kit";
 
 type C = { id: string; isi: string; created_at: string; nama: string };
 
@@ -24,24 +25,39 @@ export function Comments({ videoId, comments }: { videoId: string; comments: C[]
   }
 
   return (
-    <div className="space-y-3">
-      <h3 className="font-medium">Komentar & Catatan</h3>
+    <div className="space-y-4">
+      <SectionTitle>Komentar &amp; Catatan</SectionTitle>
+
       <div className="space-y-2">
         {comments.map((c) => (
-          <motion.div key={c.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="rounded-md border p-2 text-sm">
-            <div className="mb-0.5 flex justify-between text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">{c.nama}</span>
-              <span>{new Date(c.created_at).toLocaleString("id-ID")}</span>
+          <motion.div
+            key={c.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="rounded-lg border border-border bg-card/60 p-3"
+          >
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-xs font-medium text-foreground">{c.nama}</span>
+              <span className="text-xs text-muted-foreground">
+                {new Date(c.created_at).toLocaleString("id-ID")}
+              </span>
             </div>
-            <p className="whitespace-pre-wrap">{c.isi}</p>
+            <p className="text-sm whitespace-pre-wrap text-foreground/80">{c.isi}</p>
           </motion.div>
         ))}
-        {comments.length === 0 && <p className="text-sm text-muted-foreground">Belum ada komentar.</p>}
+        {comments.length === 0 && (
+          <p className="text-sm text-muted-foreground">Belum ada komentar.</p>
+        )}
       </div>
+
       <div className="flex gap-2">
-        <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2}
-          className="flex-1 rounded-md border p-2 text-sm" placeholder="Tulis catatan revisi / komentar..." />
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={2}
+          className="flex-1 rounded-lg border border-border bg-background p-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand/50 transition"
+          placeholder="Tulis catatan revisi / komentar..."
+        />
         <Button disabled={pending} onClick={submit}>Kirim</Button>
       </div>
     </div>
