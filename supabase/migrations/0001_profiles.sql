@@ -36,14 +36,14 @@ create policy "profiles_insert_owner" on public.profiles
 
 -- Auto-buat profil saat user baru dibuat (metadata diisi saat createUser)
 create or replace function public.handle_new_user()
-returns trigger language plpgsql security definer as $$
+returns trigger language plpgsql security definer set search_path = public as $$
 begin
   insert into public.profiles (id, nama, email, role)
   values (
     new.id,
     coalesce(new.raw_user_meta_data->>'nama', new.email),
     new.email,
-    coalesce((new.raw_user_meta_data->>'role')::user_role, 'editor')
+    coalesce((new.raw_user_meta_data->>'role')::public.user_role, 'editor')
   );
   return new;
 end;
