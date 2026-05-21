@@ -1,10 +1,14 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Role } from "@/lib/roles";
 
 export type Profile = { id: string; nama: string; email: string; role: Role; aktif: boolean };
 
-export async function getCurrentProfile(): Promise<Profile | null> {
+// Dibungkus React cache(): semua pemanggil dalam SATU render request (layout + page +
+// komponen) berbagi satu hasil — hanya 1× getUser() + 1× query profil per navigasi,
+// bukan berulang. Mengurangi round-trip ke Supabase yang bikin klik terasa berat.
+export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
@@ -15,7 +19,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
     .single();
   if (!data || !data.aktif) return null;
   return data as Profile;
-}
+});
 
 export async function requireProfile(): Promise<Profile> {
   const profile = await getCurrentProfile();
