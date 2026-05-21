@@ -13,36 +13,64 @@ export function VideoBoard({ cards }: { cards: Card[] }) {
 
   return (
     <div className="space-y-4">
+      {/* Filter chips */}
       <div className="flex flex-wrap gap-2">
         {(["all", "monolog", "podcast", "shorts", "clipping"] as const).map((t) => (
-          <button key={t} onClick={() => setTipe(t)}
-            className={`rounded-full border px-3 py-1 text-xs ${tipe === t ? "bg-foreground text-background" : "text-muted-foreground"}`}>
+          <button
+            key={t}
+            onClick={() => setTipe(t)}
+            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+              tipe === t
+                ? "bg-brand text-brand-foreground"
+                : "border border-border text-muted-foreground hover:bg-accent"
+            }`}
+          >
             {t === "all" ? "Semua" : TYPE_LABEL[t]}
           </button>
         ))}
       </div>
+
+      {/* Kanban columns */}
       <div className="flex gap-3 overflow-x-auto pb-4">
         {STATUS_ORDER.map((status) => {
           const items = filtered.filter((c) => c.status === status);
           return (
             <div key={status} className="w-64 shrink-0">
-              <div className="mb-2 flex items-center justify-between px-1">
-                <span className="text-sm font-medium">{STATUS_LABEL[status]}</span>
-                <span className="text-xs text-muted-foreground">{items.length}</span>
+              {/* Column header */}
+              <div className="mb-2 flex items-center gap-2 px-1">
+                <span className="text-xs font-medium text-foreground/70">{STATUS_LABEL[status]}</span>
+                <span className="tnum rounded-full bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">
+                  {items.length}
+                </span>
               </div>
+
+              {/* Cards */}
               <div className="space-y-2">
                 {items.map((c) => (
-                  <motion.div key={c.id} layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
-                    <Link href={`/video/${c.id}`}
-                      className="block rounded-lg border bg-card p-3 text-sm shadow-sm transition hover:shadow">
-                      <p className="font-medium">{c.judul}</p>
+                  <motion.div
+                    key={c.id}
+                    layout
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <Link
+                      href={`/video/${c.id}`}
+                      className="block rounded-xl border border-border bg-card p-3 shadow-card transition hover:shadow-soft hover:-translate-y-0.5"
+                    >
+                      <p className="text-sm font-medium text-foreground">{c.judul}</p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {TYPE_LABEL[c.tipe]}{c.editorNama ? ` · ${c.editorNama}` : ""}
                       </p>
                     </Link>
                   </motion.div>
                 ))}
-                {items.length === 0 && <p className="px-1 text-xs text-muted-foreground/60">—</p>}
+
+                {/* Empty placeholder */}
+                {items.length === 0 && (
+                  <div className="rounded-xl border border-dashed border-border/60 px-3 py-4 text-center">
+                    <p className="text-xs text-muted-foreground/50">—</p>
+                  </div>
+                )}
               </div>
             </div>
           );

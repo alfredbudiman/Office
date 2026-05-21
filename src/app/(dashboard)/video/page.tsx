@@ -3,6 +3,7 @@ import { listVideos, listEditors } from "@/lib/videos";
 import { createClient } from "@/lib/supabase/server";
 import { VideoBoard } from "./video-board";
 import { NewVideoForm } from "./new-video-form";
+import { PageHeader } from "@/components/ui-kit";
 import type { VideoType, VideoStatus } from "@/lib/video-workflow";
 
 export default async function VideoPage() {
@@ -25,10 +26,12 @@ export default async function VideoPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">{profile.role === "owner" ? "Video" : "Video Saya"}</h1>
+      <PageHeader
+        title={profile.role === "owner" ? "Video" : "Video Saya"}
+        description="Alur produksi dari cut-to-cut sampai tayang."
+      >
         {profile.role === "owner" && <NewVideoForm editors={editors} parents={parents} />}
-      </div>
+      </PageHeader>
       <VideoBoard cards={cards} />
     </div>
   );
