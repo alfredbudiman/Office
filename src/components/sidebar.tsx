@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  LayoutDashboard, Clapperboard, Boxes, BarChart3, Users, Clock, Film,
+  LayoutDashboard, Clapperboard, Boxes, BarChart3, Users, Clock,
   type LucideIcon,
 } from "lucide-react";
+import { SproutLogo } from "@/components/brand/sprout-logo";
 import type { MenuItem } from "@/lib/roles";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -23,15 +24,16 @@ export function Sidebar({ items, nama, role }: { items: MenuItem[]; nama: string
   const initial = (nama?.trim()?.[0] ?? "?").toUpperCase();
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-r border-border bg-sidebar">
+    <aside className="relative flex w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
       {/* Brand */}
-      <div className="flex items-center gap-2.5 px-5 py-5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-brand-foreground shadow-soft">
-          <Film className="h-[18px] w-[18px]" strokeWidth={2.25} />
+      <div className="flex items-center gap-3 px-5 py-6">
+        <span className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-brand text-brand-foreground shadow-soft">
+          <SproutLogo size={22} />
+          <span className="pointer-events-none absolute -inset-1 rounded-2xl bg-brand/15 blur-md -z-10" />
         </span>
         <div className="leading-tight">
-          <p className="text-sm font-semibold tracking-tight">Office</p>
-          <p className="text-[11px] text-muted-foreground">Dashboard Tim</p>
+          <p className="font-display text-[22px] leading-none tracking-tight">SPROUT</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">Dashboard Tim</p>
         </div>
       </div>
 

@@ -9,10 +9,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const profile = await requireProfile();
   const items = menuForRole(profile.role);
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="bg-paper flex min-h-screen">
       <Sidebar items={items} nama={profile.nama} role={profile.role} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex h-14 items-center justify-end gap-1 border-b border-border bg-background/80 px-6 backdrop-blur-md">
+        <header className="sticky top-0 z-20 flex h-14 items-center justify-end gap-1 border-b border-border/70 bg-background/70 px-6 backdrop-blur-md">
           <NotifBell />
           <form action={logout}>
             <button
@@ -25,7 +25,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </form>
         </header>
         <main className="flex-1">
-          <div className="mx-auto w-full max-w-6xl px-6 py-8">{children}</div>
+          <div className="mx-auto w-full max-w-6xl px-6 py-10">{children}</div>
         </main>
       </div>
     </div>
