@@ -43,8 +43,8 @@ export default function LoginPage() {
         <div className="rounded-2xl border border-border bg-card/80 p-6 shadow-card backdrop-blur-sm">
           <form action={formAction} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" autoComplete="email" required />
+              <Label htmlFor="identifier">Email atau Username</Label>
+              <Input id="identifier" name="identifier" type="text" autoComplete="username" required />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="password">Password</Label>
