@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { addComment } from "../actions";
 import { Button } from "@/components/ui/button";
 import { SectionTitle } from "@/components/ui-kit";
+import { linkifyText } from "@/lib/linkify";
 
 type C = { id: string; isi: string; created_at: string; nama: string };
 
@@ -42,7 +43,7 @@ export function Comments({ videoId, comments }: { videoId: string; comments: C[]
                 {new Date(c.created_at).toLocaleString("id-ID")}
               </span>
             </div>
-            <p className="text-sm whitespace-pre-wrap text-foreground/80">{c.isi}</p>
+            <p className="text-sm whitespace-pre-wrap break-words text-foreground/80">{linkifyText(c.isi)}</p>
           </motion.div>
         ))}
         {comments.length === 0 && (

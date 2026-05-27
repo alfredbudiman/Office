@@ -6,8 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { notify } from "@/lib/notifications";
 import { getVideo } from "@/lib/videos";
 import {
-  initialStatus, applyAction, ACTIONS,
-  type VideoType, type VideoAction,
+  initialStatus, applyAction, ACTIONS, STATUS_ORDER, STATUS_LABEL,
+  type VideoType, type VideoAction, type VideoStatus,
 } from "@/lib/video-workflow";
 
 function isUrl(s: string) {
@@ -83,6 +83,50 @@ export async function applyVideoAction(videoId: string, action: VideoAction, lin
 
   const counterpart = profile.role === "owner" ? video.editor_id : video.created_by ?? null;
   await notify(counterpart, `Status "${video.judul}" → ${res.to}`, `/video/${videoId}`);
+
+  revalidatePath(`/video/${videoId}`);
+  revalidatePath("/video");
+  return { ok: true };
+}
+
+export async function overrideVideoStatus(videoId: string, target: VideoStatus) {
+  const profile = await requireRole("owner");
+  if (!STATUS_ORDER.includes(target)) {
+    return { ok: false, error: "Status tujuan tidak valid" };
+  }
+  const video = await getVideo(videoId);
+  if (!video) return { ok: false, error: "Video tidak ditemukan" };
+  if (video.status === target) {
+    return { ok: false, error: "Status sudah pada posisi tersebut" };
+  }
+
+  const supabase = await createClient();
+  const patch: Record<string, unknown> = { status: target };
+  if (target === "final") {
+    patch.final_at = new Date().toISOString();
+  }
+  if (target === "tayang") {
+    patch.sudah_tayang = true;
+    patch.published_at = new Date().toISOString();
+  } else if (video.status === "tayang") {
+    patch.sudah_tayang = false;
+    patch.published_at = null;
+  }
+
+  const { error: upErr } = await supabase.from("videos").update(patch).eq("id", videoId);
+  if (upErr) return { ok: false, error: upErr.message };
+
+  await supabase.from("status_events").insert({
+    video_id: videoId, status_lama: video.status, status_baru: target, changed_by: profile.id,
+  });
+
+  if (video.editor_id) {
+    await notify(
+      video.editor_id,
+      `Status "${video.judul}" diubah ke ${STATUS_LABEL[target]} oleh owner`,
+      `/video/${videoId}`,
+    );
+  }
 
   revalidatePath(`/video/${videoId}`);
   revalidatePath("/video");

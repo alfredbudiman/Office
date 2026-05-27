@@ -64,7 +64,12 @@ export default async function VideoDetailPage({ params }: { params: Promise<{ id
         </div>
 
         {/* Status actions card */}
-        <StatusActions videoId={video.id} actions={actions} />
+        <StatusActions
+          videoId={video.id}
+          actions={actions}
+          isOwner={profile.role === "owner"}
+          currentStatus={video.status}
+        />
 
         {/* Draft history card */}
         <div className="rounded-xl border border-border bg-card p-5 shadow-card">
