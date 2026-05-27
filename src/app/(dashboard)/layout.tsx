@@ -1,6 +1,6 @@
 import { requireProfile } from "@/lib/auth";
 import { menuForRole } from "@/lib/roles";
-import { Sidebar } from "@/components/sidebar";
+import { DashboardShell } from "@/components/dashboard-shell";
 import { logout } from "@/app/login/actions";
 import { NotifBell } from "@/components/notif-bell";
 import { LogOut } from "lucide-react";
@@ -9,10 +9,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const profile = await requireProfile();
   const items = menuForRole(profile.role);
   return (
-    <div className="bg-paper flex min-h-screen">
-      <Sidebar items={items} nama={profile.nama} role={profile.role} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex h-14 items-center justify-end gap-1 border-b border-border/70 bg-background/70 px-6 backdrop-blur-md">
+    <DashboardShell
+      items={items}
+      nama={profile.nama}
+      role={profile.role}
+      headerRight={
+        <>
           <NotifBell />
           <form action={logout}>
             <button
@@ -23,11 +25,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <span className="hidden sm:inline">Keluar</span>
             </button>
           </form>
-        </header>
-        <main className="flex-1">
-          <div className="mx-auto w-full max-w-6xl px-6 py-10">{children}</div>
-        </main>
-      </div>
-    </div>
+        </>
+      }
+    >
+      {children}
+    </DashboardShell>
   );
 }

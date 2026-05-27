@@ -101,7 +101,36 @@ export default async function RekapPage({
 
       <section className="space-y-3">
         <SectionTitle>Daftar selesai ({videos.length})</SectionTitle>
-        <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden overflow-x-auto">
+
+        {/* Mobile: card list */}
+        <div className="space-y-2 sm:hidden">
+          {videos.map((v) => (
+            <div key={v.id} className="rounded-xl border border-border bg-card p-3 shadow-card">
+              <p className="text-sm font-medium">{v.judul}</p>
+              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                <span>{TYPE_LABEL[v.tipe]}</span>
+                <span>·</span>
+                <span>{v.editor_id ? namaById.get(v.editor_id) ?? "—" : "—"}</span>
+              </div>
+              <div className="mt-2 flex items-center justify-between gap-2 text-xs">
+                <span className="tnum text-muted-foreground">
+                  Final: {new Date(v.final_at).toLocaleDateString("id-ID")}
+                </span>
+                <span className="tnum font-medium">
+                  {formatDuration(totalDurationMs(v.created_at, v.final_at))}
+                </span>
+              </div>
+            </div>
+          ))}
+          {videos.length === 0 && (
+            <div className="rounded-xl border border-dashed border-border bg-card/50 px-4 py-8 text-center text-sm text-muted-foreground">
+              Tidak ada data di periode ini.
+            </div>
+          )}
+        </div>
+
+        {/* Desktop: table */}
+        <div className="hidden rounded-xl border border-border bg-card shadow-card overflow-hidden overflow-x-auto sm:block">
           <table className="w-full">
             <thead>
               <tr className="bg-muted/50">
