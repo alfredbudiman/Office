@@ -21,7 +21,8 @@ export default async function VideoPage() {
   const namaById = new Map(profs.map((p) => [p.id, p.nama]));
 
   const cards = videos.map((v) => ({
-    id: v.id, judul: v.judul, tipe: v.tipe as VideoType, status: v.status as VideoStatus,
+    id: v.id, judul: v.judul, tipe: v.tipe as VideoType, tipe_custom: v.tipe_custom,
+    status: v.status as VideoStatus,
     editorNama: v.editor_id ? namaById.get(v.editor_id) ?? null : null,
   }));
 

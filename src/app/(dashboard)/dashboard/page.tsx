@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireProfile } from "@/lib/auth";
 import { listVideos } from "@/lib/videos";
-import { actionsFor, TYPE_LABEL } from "@/lib/video-workflow";
+import { actionsFor, typeLabel } from "@/lib/video-workflow";
 import { PageHeader, StatCard, SectionTitle } from "@/components/ui-kit";
 import { StatusBadge } from "@/components/status-badge";
 import { Inbox, PackageCheck, Loader } from "lucide-react";
@@ -49,7 +49,7 @@ export default async function DashboardPage() {
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{v.judul}</p>
-                  <p className="text-xs text-muted-foreground">{TYPE_LABEL[v.tipe]}</p>
+                  <p className="text-xs text-muted-foreground">{typeLabel(v)}</p>
                 </div>
                 <StatusBadge status={v.status} />
               </Link>

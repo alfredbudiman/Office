@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { STATUS_ORDER, STATUS_LABEL, TYPE_LABEL, type VideoStatus, type VideoType } from "@/lib/video-workflow";
+import { STATUS_ORDER, STATUS_LABEL, TYPE_LABEL, typeLabel, type VideoStatus, type VideoType } from "@/lib/video-workflow";
 
-type Card = { id: string; judul: string; tipe: VideoType; status: VideoStatus; editorNama: string | null };
+type Card = {
+  id: string; judul: string; tipe: VideoType; tipe_custom: string | null;
+  status: VideoStatus; editorNama: string | null;
+};
 
 export function VideoBoard({ cards }: { cards: Card[] }) {
   const [tipe, setTipe] = useState<VideoType | "all">("all");
@@ -15,7 +18,7 @@ export function VideoBoard({ cards }: { cards: Card[] }) {
     <div className="space-y-4">
       {/* Filter chips */}
       <div className="flex flex-wrap gap-2">
-        {(["all", "monolog", "podcast", "shorts", "clipping"] as const).map((t) => (
+        {(["all", "monolog", "podcast", "shorts", "clipping", "lainnya"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTipe(t)}
@@ -59,7 +62,7 @@ export function VideoBoard({ cards }: { cards: Card[] }) {
                     >
                       <p className="text-sm font-medium text-foreground">{c.judul}</p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {TYPE_LABEL[c.tipe]}{c.editorNama ? ` · ${c.editorNama}` : ""}
+                        {typeLabel(c)}{c.editorNama ? ` · ${c.editorNama}` : ""}
                       </p>
                     </Link>
                   </motion.div>

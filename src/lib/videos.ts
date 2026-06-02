@@ -26,7 +26,8 @@ export type CommentRow = {
   isi: string; created_at: string;
 };
 export type StatusEventRow = {
-  id: string; status_lama: VideoStatus | null; status_baru: VideoStatus; created_at: string;
+  id: string; status_lama: VideoStatus | null; status_baru: VideoStatus;
+  created_at: string; note: string | null;
 };
 
 // RLS otomatis membatasi: owner lihat semua, editor lihat miliknya.
@@ -68,7 +69,7 @@ export async function getComments(videoId: string): Promise<CommentRow[]> {
 export async function getStatusEvents(videoId: string): Promise<StatusEventRow[]> {
   const supabase = await createClient();
   const { data } = await supabase
-    .from("status_events").select("id, status_lama, status_baru, created_at")
+    .from("status_events").select("id, status_lama, status_baru, created_at, note")
     .eq("video_id", videoId).order("created_at", { ascending: true });
   return (data ?? []) as StatusEventRow[];
 }

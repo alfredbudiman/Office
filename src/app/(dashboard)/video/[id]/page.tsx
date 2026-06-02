@@ -4,7 +4,7 @@ import { ArrowLeft, ExternalLink } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { getVideo, getDrafts, getComments, getStatusEvents } from "@/lib/videos";
 import { createClient } from "@/lib/supabase/server";
-import { actionsFor, STATUS_LABEL, TYPE_LABEL } from "@/lib/video-workflow";
+import { actionsFor, STATUS_LABEL, typeLabel } from "@/lib/video-workflow";
 import { StatusActions } from "./status-actions";
 import { Comments } from "./comments";
 import { StatusBadge } from "@/components/status-badge";
@@ -47,7 +47,7 @@ export default async function VideoDetailPage({ params }: { params: Promise<{ id
             <StatusBadge status={video.status} />
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            {TYPE_LABEL[video.tipe]}
+            {typeLabel(video)}
             {video.editor_id ? ` · Editor: ${namaById.get(video.editor_id) ?? "—"}` : " · belum ditugaskan"}
           </p>
           {video.link_source && (
@@ -110,7 +110,6 @@ export default async function VideoDetailPage({ params }: { params: Promise<{ id
           <ol className="mt-4 space-y-4 border-l border-border pl-4">
             {events.map((e, i) => (
               <li key={e.id} className="relative">
-                {/* Dot on the timeline */}
                 <span
                   className={`absolute -left-[1.3125rem] top-0.5 h-2.5 w-2.5 rounded-full border-2 border-background ${
                     i === 0 ? "bg-brand" : "bg-muted-foreground/40"
@@ -122,6 +121,11 @@ export default async function VideoDetailPage({ params }: { params: Promise<{ id
                 <span className="block text-xs text-muted-foreground">
                   {new Date(e.created_at).toLocaleString("id-ID")}
                 </span>
+                {e.note && (
+                  <span className="mt-1 block text-xs italic text-muted-foreground/80">
+                    &quot;{e.note}&quot;
+                  </span>
+                )}
               </li>
             ))}
             {events.length === 0 && (
