@@ -11,6 +11,7 @@ describe("menuForRole", () => {
       "/rekap",
       "/users",
       "/absensi",
+      "/pengaturan",
     ]);
   });
 
