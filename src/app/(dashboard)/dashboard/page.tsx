@@ -4,11 +4,13 @@ import { listVideos } from "@/lib/videos";
 import { actionsFor, typeLabel } from "@/lib/video-workflow";
 import { PageHeader, StatCard, SectionTitle } from "@/components/ui-kit";
 import { StatusBadge } from "@/components/status-badge";
-import { Inbox, PackageCheck, Loader } from "lucide-react";
+import { Inbox, PackageCheck, Loader, FolderOpen } from "lucide-react";
+import { getSetting } from "@/lib/settings";
 
 export default async function DashboardPage() {
   const profile = await requireProfile();
   const videos = await listVideos();
+  const driveFolderUrl = await getSetting("drive_folder_url");
 
   const needsAction = videos.filter((v) => actionsFor(v.status, profile.role).length > 0);
   const readyToPublish = videos.filter((v) => v.status === "final" && !v.sudah_tayang).length;
@@ -19,6 +21,28 @@ export default async function DashboardPage() {
   return (
     <div>
       <PageHeader title={`Halo, ${profile.nama.split(" ")[0]} 👋`} description={greeting} />
+
+      {driveFolderUrl && (
+        <section className="mt-6">
+          <a
+            href={driveFolderUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center justify-between rounded-xl border border-border bg-card p-4 shadow-card transition hover:shadow-soft"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10 text-brand">
+                <FolderOpen className="h-5 w-5" />
+              </span>
+              <div className="leading-tight">
+                <p className="text-sm font-medium">Folder Hasil</p>
+                <p className="text-xs text-muted-foreground">Buka folder Google Drive berisi semua video</p>
+              </div>
+            </div>
+            <span className="text-xs text-brand">Buka →</span>
+          </a>
+        </section>
+      )}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <StatCard

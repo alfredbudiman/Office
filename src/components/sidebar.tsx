@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  LayoutDashboard, Clapperboard, Boxes, BarChart3, Users, Clock, Settings,
+  LayoutDashboard, Clapperboard, Boxes, BarChart3, Users, Clock, Settings, Folder,
   type LucideIcon,
 } from "lucide-react";
 import { SproutLogo } from "@/components/brand/sprout-logo";
@@ -20,7 +20,14 @@ const ICONS: Record<string, LucideIcon> = {
   "/pengaturan": Settings,
 };
 
-export function Sidebar({ items, nama, role }: { items: MenuItem[]; nama: string; role: string }) {
+export function Sidebar({
+  items, nama, role, driveFolderUrl,
+}: {
+  items: MenuItem[];
+  nama: string;
+  role: string;
+  driveFolderUrl: string | null;
+}) {
   const pathname = usePathname();
   const initial = (nama?.trim()?.[0] ?? "?").toUpperCase();
 
@@ -76,6 +83,18 @@ export function Sidebar({ items, nama, role }: { items: MenuItem[]; nama: string
           );
         })}
       </nav>
+
+      {driveFolderUrl && (
+        <a
+          href={driveFolderUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="mx-3 mb-2 flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground/70 transition-colors hover:bg-accent"
+        >
+          <Folder className="h-[18px] w-[18px] text-muted-foreground" strokeWidth={2} />
+          <span>Folder Drive Final</span>
+        </a>
+      )}
 
       {/* User chip */}
       <div className="m-3 flex items-center gap-3 rounded-xl border border-border bg-card/60 px-3 py-2.5">
