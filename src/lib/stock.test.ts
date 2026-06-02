@@ -14,6 +14,16 @@ describe("stockReadyByType", () => {
     expect(res.shorts).toBe(1);
     expect(res.podcast).toBe(0);
     expect(res.clipping).toBe(0);
+    expect(res.lainnya).toBe(0);
+  });
+
+  it("hitung video tipe lainnya yang belum tayang", () => {
+    const res = stockReadyByType([
+      v("lainnya", "final"), v("lainnya", "final"), v("lainnya", "final", true),
+      v("lainnya", "editing"),
+    ]);
+    expect(res.lainnya).toBe(2);
+    expect(res.monolog).toBe(0);
   });
 });
 
