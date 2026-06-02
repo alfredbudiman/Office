@@ -1,12 +1,13 @@
 import type { Role } from "@/lib/roles";
 
-export type VideoType = "monolog" | "podcast" | "shorts" | "clipping";
+export type VideoType = "monolog" | "podcast" | "shorts" | "clipping" | "lainnya";
 export type VideoStatus =
   | "draft_brief" | "cut_to_cut" | "review_cut"
   | "editing" | "review_draft" | "final" | "tayang";
 export type VideoAction =
   | "start_cut" | "submit_cut" | "approve_cut" | "request_cut_revision"
-  | "submit_draft" | "approve_final" | "request_revision" | "mark_tayang";
+  | "submit_draft" | "approve_final" | "request_revision" | "mark_tayang"
+  | "force_set_status";
 
 export const STATUS_ORDER: VideoStatus[] = [
   "draft_brief", "cut_to_cut", "review_cut", "editing", "review_draft", "final", "tayang",
@@ -27,6 +28,7 @@ export const TYPE_LABEL: Record<VideoType, string> = {
   podcast: "Podcast",
   shorts: "Shorts",
   clipping: "Clipping",
+  lainnya: "Lainnya",
 };
 
 export const ACTION_LABEL: Record<VideoAction, string> = {
@@ -38,6 +40,7 @@ export const ACTION_LABEL: Record<VideoAction, string> = {
   approve_final: "Centang Final",
   request_revision: "Minta Revisi",
   mark_tayang: "Tandai Tayang",
+  force_set_status: "Ubah status manual",
 };
 
 type ActionDef = {
@@ -48,7 +51,7 @@ type ActionDef = {
   createsDraft?: boolean;
 };
 
-export const ACTIONS: Record<VideoAction, ActionDef> = {
+export const ACTIONS: Record<Exclude<VideoAction, "force_set_status">, ActionDef> = {
   start_cut: { from: "draft_brief", to: "cut_to_cut", role: "editor" },
   submit_cut: { from: "cut_to_cut", to: "review_cut", role: "editor", requiresLink: true },
   approve_cut: { from: "review_cut", to: "editing", role: "owner" },
@@ -63,9 +66,11 @@ export function initialStatus(type: VideoType): VideoStatus {
   return type === "clipping" ? "editing" : "draft_brief";
 }
 
+type WorkflowAction = Exclude<VideoAction, "force_set_status">;
+
 export function actionsFor(status: VideoStatus, role: Role): VideoAction[] {
   if (role !== "owner" && role !== "editor") return [];
-  return (Object.keys(ACTIONS) as VideoAction[]).filter(
+  return (Object.keys(ACTIONS) as WorkflowAction[]).filter(
     (a) => ACTIONS[a].from === status && ACTIONS[a].role === role
   );
 }
@@ -74,10 +79,15 @@ export function applyAction(
   status: VideoStatus,
   action: VideoAction
 ): { ok: true; to: VideoStatus } | { ok: false; error: string } {
-  const def = ACTIONS[action];
+  const def = action in ACTIONS ? ACTIONS[action as WorkflowAction] : undefined;
   if (!def) return { ok: false, error: "Aksi tidak dikenal" };
   if (def.from !== status) {
     return { ok: false, error: `Aksi '${action}' tidak valid dari status '${STATUS_LABEL[status]}'` };
   }
   return { ok: true, to: def.to };
+}
+
+export function typeLabel(row: { tipe: VideoType; tipe_custom: string | null }): string {
+  if (row.tipe === "lainnya") return row.tipe_custom?.trim() || "Lainnya";
+  return TYPE_LABEL[row.tipe];
 }

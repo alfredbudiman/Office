@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   initialStatus, actionsFor, applyAction, ACTIONS,
+  typeLabel,
   type VideoStatus, type VideoAction,
 } from "@/lib/video-workflow";
 
@@ -64,5 +65,18 @@ describe("ACTIONS metadata", () => {
   });
   it("submit_draft membuat draft", () => {
     expect(ACTIONS.submit_draft.createsDraft).toBe(true);
+  });
+});
+
+describe("typeLabel", () => {
+  it("non-lainnya pakai TYPE_LABEL", () => {
+    expect(typeLabel({ tipe: "monolog", tipe_custom: null })).toBe("Monolog");
+    expect(typeLabel({ tipe: "shorts", tipe_custom: null })).toBe("Shorts");
+  });
+  it("lainnya pakai tipe_custom", () => {
+    expect(typeLabel({ tipe: "lainnya", tipe_custom: "Tutorial" })).toBe("Tutorial");
+  });
+  it("lainnya tanpa tipe_custom fallback 'Lainnya'", () => {
+    expect(typeLabel({ tipe: "lainnya", tipe_custom: null })).toBe("Lainnya");
   });
 });
