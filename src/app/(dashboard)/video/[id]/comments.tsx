@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { addComment } from "../actions";
 import { Button } from "@/components/ui/button";
 import { SectionTitle } from "@/components/ui-kit";
+import { linkify } from "@/lib/linkify";
 
 type C = { id: string; isi: string; created_at: string; nama: string };
 
@@ -42,7 +43,23 @@ export function Comments({ videoId, comments }: { videoId: string; comments: C[]
                 {new Date(c.created_at).toLocaleString("id-ID")}
               </span>
             </div>
-            <p className="text-sm whitespace-pre-wrap text-foreground/80">{c.isi}</p>
+            <p className="text-sm whitespace-pre-wrap text-foreground/80">
+              {linkify(c.isi).map((part, i) =>
+                part.type === "link" ? (
+                  <a
+                    key={i}
+                    href={part.value.startsWith("http") ? part.value : `https://${part.value}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-brand underline-offset-2 hover:underline break-all"
+                  >
+                    {part.value}
+                  </a>
+                ) : (
+                  <span key={i}>{part.value}</span>
+                ),
+              )}
+            </p>
           </motion.div>
         ))}
         {comments.length === 0 && (
