@@ -16,6 +16,7 @@ type ActionState = { ok: boolean; errors: Record<string, string>; id?: string } 
 export function NewVideoForm({ editors, parents }: { editors: EditorOpt[]; parents: VideoOpt[] }) {
   const [open, setOpen] = useState(false);
   const [tipe, setTipe] = useState("monolog");
+  const [tipeCustom, setTipeCustom] = useState("");
   const [state, action, pending] = useActionState(createVideo, null as ActionState);
   const router = useRouter();
   const errors = (state?.errors ?? {}) as Record<string, string>;
@@ -47,13 +48,33 @@ export function NewVideoForm({ editors, parents }: { editors: EditorOpt[]; paren
             <option value="podcast">Podcast</option>
             <option value="shorts">Shorts</option>
             <option value="clipping">Clipping</option>
+            <option value="lainnya">Lainnya</option>
           </select>
         </div>
+        {tipe === "lainnya" && (
+          <div className="space-y-1 sm:col-span-2">
+            <Label htmlFor="tipe_custom">Nama tipe</Label>
+            <Input
+              id="tipe_custom"
+              name="tipe_custom"
+              value={tipeCustom}
+              onChange={(e) => setTipeCustom(e.target.value)}
+              placeholder="mis. Behind the scenes, Tutorial, dll"
+              maxLength={50}
+            />
+            {errors.tipe_custom && <p className="text-xs text-red-500">{errors.tipe_custom}</p>}
+          </div>
+        )}
         <div className="space-y-1">
           <Label htmlFor="editor_id">Editor</Label>
-          <select id="editor_id" name="editor_id" className="h-9 w-full rounded-md border px-2 text-sm">
-            <option value="">— belum ditugaskan —</option>
+          <select
+            id="editor_id"
+            name="editor_id"
+            defaultValue={editors[0]?.id ?? ""}
+            className="h-9 w-full rounded-md border px-2 text-sm"
+          >
             {editors.map((e) => <option key={e.id} value={e.id}>{e.nama}</option>)}
+            <option value="">— belum ditugaskan —</option>
           </select>
         </div>
         <div className="space-y-1 sm:col-span-2">
