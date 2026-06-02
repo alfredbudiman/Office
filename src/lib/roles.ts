@@ -10,6 +10,7 @@ const MENUS: Record<Role, MenuItem[]> = {
     { label: "Rekap Kinerja", href: "/rekap" },
     { label: "Kelola User", href: "/users" },
     { label: "Absensi", href: "/absensi" },
+    { label: "Pengaturan", href: "/pengaturan" },
   ],
   editor: [
     { label: "Dashboard", href: "/dashboard" },
