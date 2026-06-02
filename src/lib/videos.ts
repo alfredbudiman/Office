@@ -5,6 +5,7 @@ export type VideoRow = {
   id: string;
   judul: string;
   tipe: VideoType;
+  tipe_custom: string | null;
   status: VideoStatus;
   editor_id: string | null;
   parent_video_id: string | null;
@@ -33,7 +34,7 @@ export async function listVideos(): Promise<VideoRow[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("videos")
-    .select("id, judul, tipe, status, editor_id, parent_video_id, link_source, target_tayang, sudah_tayang, created_at, final_at, created_by")
+    .select("id, judul, tipe, tipe_custom, status, editor_id, parent_video_id, link_source, target_tayang, sudah_tayang, created_at, final_at, created_by")
     .order("created_at", { ascending: false });
   return (data ?? []) as VideoRow[];
 }
@@ -42,7 +43,7 @@ export async function getVideo(id: string): Promise<VideoRow | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("videos")
-    .select("id, judul, tipe, status, editor_id, parent_video_id, link_source, target_tayang, sudah_tayang, created_at, final_at, created_by")
+    .select("id, judul, tipe, tipe_custom, status, editor_id, parent_video_id, link_source, target_tayang, sudah_tayang, created_at, final_at, created_by")
     .eq("id", id)
     .maybeSingle();
   return (data as VideoRow) ?? null;

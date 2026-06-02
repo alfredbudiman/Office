@@ -48,6 +48,7 @@ export async function applyVideoAction(videoId: string, action: VideoAction, lin
   const video = await getVideo(videoId);
   if (!video) return { ok: false, error: "Video tidak ditemukan" };
 
+  if (action === "force_set_status") return { ok: false, error: "Aksi belum diimplementasikan" };
   const def = ACTIONS[action];
   if (!def) return { ok: false, error: "Aksi tidak dikenal" };
   if (def.role !== profile.role) return { ok: false, error: "Anda tidak berhak melakukan aksi ini" };

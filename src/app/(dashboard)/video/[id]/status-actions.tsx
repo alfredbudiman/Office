@@ -12,7 +12,7 @@ export function StatusActions({ videoId, actions }: { videoId: string; actions: 
   const [pending, start] = useTransition();
   const [link, setLink] = useState("");
   const router = useRouter();
-  const needsLink = actions.some((a) => ACTIONS[a].requiresLink);
+  const needsLink = actions.some((a) => a !== "force_set_status" && ACTIONS[a].requiresLink);
 
   if (actions.length === 0) {
     return (
