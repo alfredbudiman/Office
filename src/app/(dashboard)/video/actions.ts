@@ -6,8 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { notify } from "@/lib/notifications";
 import { getVideo } from "@/lib/videos";
 import {
-  initialStatus, applyAction, ACTIONS,
-  type VideoType, type VideoAction,
+  initialStatus, applyAction, ACTIONS, STATUS_ORDER,
+  type VideoType, type VideoAction, type VideoStatus,
 } from "@/lib/video-workflow";
 
 function isUrl(s: string) {
@@ -18,13 +18,17 @@ export async function createVideo(_prev: unknown, formData: FormData) {
   await requireRole("owner");
   const judul = String(formData.get("judul") ?? "").trim();
   const tipe = String(formData.get("tipe") ?? "") as VideoType;
+  const tipeCustomRaw = String(formData.get("tipe_custom") ?? "").trim();
   const editorId = String(formData.get("editor_id") ?? "") || null;
   const linkSource = String(formData.get("link_source") ?? "").trim();
   const parentId = String(formData.get("parent_video_id") ?? "") || null;
 
   const errors: Record<string, string> = {};
   if (!judul) errors.judul = "Judul wajib diisi";
-  if (!["monolog", "podcast", "shorts", "clipping"].includes(tipe)) errors.tipe = "Tipe tidak valid";
+  if (!["monolog", "podcast", "shorts", "clipping", "lainnya"].includes(tipe)) errors.tipe = "Tipe tidak valid";
+  if (tipe === "lainnya" && (!tipeCustomRaw || tipeCustomRaw.length > 50)) {
+    errors.tipe_custom = "Nama tipe wajib 1–50 karakter";
+  }
   if (linkSource && !isUrl(linkSource)) errors.link_source = "Link harus URL valid";
   if (tipe === "clipping" && !parentId) errors.parent_video_id = "Clipping wajib pilih video induk";
   if (Object.keys(errors).length) return { ok: false, errors };
@@ -32,7 +36,9 @@ export async function createVideo(_prev: unknown, formData: FormData) {
   const profile = await requireProfile();
   const supabase = await createClient();
   const { data, error } = await supabase.from("videos").insert({
-    judul, tipe, status: initialStatus(tipe),
+    judul, tipe,
+    tipe_custom: tipe === "lainnya" ? tipeCustomRaw : null,
+    status: initialStatus(tipe),
     editor_id: editorId, parent_video_id: parentId,
     link_source: linkSource || null, created_by: profile.id,
   }).select("id").single();
@@ -43,12 +49,63 @@ export async function createVideo(_prev: unknown, formData: FormData) {
   return { ok: true, errors: {}, id: data.id };
 }
 
-export async function applyVideoAction(videoId: string, action: VideoAction, link?: string) {
+export async function applyVideoAction(
+  videoId: string,
+  action: VideoAction,
+  link?: string,
+  targetStatus?: VideoStatus,
+  note?: string,
+) {
   const profile = await requireProfile();
   const video = await getVideo(videoId);
   if (!video) return { ok: false, error: "Video tidak ditemukan" };
 
-  if (action === "force_set_status") return { ok: false, error: "Aksi belum diimplementasikan" };
+  if (action === "force_set_status") {
+    if (profile.role !== "owner") return { ok: false, error: "Hanya owner yang bisa lompat status" };
+    if (!targetStatus || !STATUS_ORDER.includes(targetStatus)) {
+      return { ok: false, error: "Status tujuan tidak valid" };
+    }
+    if (targetStatus === video.status) return { ok: false, error: `Status sudah ${targetStatus}` };
+    const trimmedNote = (note ?? "").trim();
+    if (trimmedNote.length < 3 || trimmedNote.length > 200) {
+      return { ok: false, error: "Catatan wajib 3–200 karakter" };
+    }
+
+    const supabase = await createClient();
+    const patch: Record<string, unknown> = { status: targetStatus };
+    if (targetStatus === "final" && video.status !== "final") {
+      patch.final_at = new Date().toISOString();
+    }
+    if (video.status === "final" && targetStatus !== "final") {
+      patch.final_at = null;
+    }
+    if (targetStatus === "tayang" && video.status !== "tayang") {
+      patch.sudah_tayang = true;
+      patch.published_at = new Date().toISOString();
+    }
+    if (video.status === "tayang" && targetStatus !== "tayang") {
+      patch.sudah_tayang = false;
+      patch.published_at = null;
+    }
+    const { error: upErr } = await supabase.from("videos").update(patch).eq("id", videoId);
+    if (upErr) return { ok: false, error: upErr.message };
+
+    await supabase.from("status_events").insert({
+      video_id: videoId,
+      status_lama: video.status,
+      status_baru: targetStatus,
+      changed_by: profile.id,
+      note: trimmedNote,
+    });
+
+    const counterpart = video.editor_id;
+    await notify(counterpart, `Status "${video.judul}" diubah → ${targetStatus} (manual)`, `/video/${videoId}`);
+
+    revalidatePath(`/video/${videoId}`);
+    revalidatePath("/video");
+    return { ok: true };
+  }
+
   const def = ACTIONS[action];
   if (!def) return { ok: false, error: "Aksi tidak dikenal" };
   if (def.role !== profile.role) return { ok: false, error: "Anda tidak berhak melakukan aksi ini" };
