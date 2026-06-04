@@ -5,11 +5,8 @@ import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getTodayAttendance } from "@/lib/attendance-data";
 import { buildProgressSummary } from "@/lib/progress-summary";
+import { wibToday } from "@/lib/wib";
 import type { VideoStatus } from "@/lib/video-workflow";
-
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export async function clockIn() {
   const profile = await requireProfile();
@@ -20,7 +17,7 @@ export async function clockIn() {
   if (!existing) {
     const { error } = await supabase
       .from("attendance")
-      .insert({ user_id: profile.id, tanggal: todayStr(), clock_in: now });
+      .insert({ user_id: profile.id, tanggal: wibToday(), clock_in: now });
     if (error) return { ok: false, error: error.message };
   } else if (!existing.clock_in) {
     const { error } = await supabase.from("attendance").update({ clock_in: now }).eq("id", existing.id);

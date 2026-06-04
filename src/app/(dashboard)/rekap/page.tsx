@@ -7,12 +7,12 @@ import { initialStatus, STATUS_ORDER, STATUS_LABEL, TYPE_LABEL, type VideoType }
 import { RekapFilter } from "./rekap-filter";
 import { PageHeader, StatCard, SectionTitle } from "@/components/ui-kit";
 import { Timer, CheckCircle2 } from "lucide-react";
+import { wibDate } from "@/lib/wib";
 
 function defaultRange() {
   const to = new Date();
   const from = new Date(); from.setDate(from.getDate() - 30);
-  const iso = (d: Date) => d.toISOString().slice(0, 10);
-  return { from: iso(from), to: iso(to) };
+  return { from: wibDate(from), to: wibDate(to) };
 }
 
 const TYPES: VideoType[] = ["monolog", "podcast", "shorts", "clipping"];

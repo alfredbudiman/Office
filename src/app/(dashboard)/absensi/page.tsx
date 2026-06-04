@@ -5,16 +5,16 @@ import { attendanceState, workedMs, sumWorkedMs } from "@/lib/attendance";
 import { formatDuration } from "@/lib/rekap";
 import { PageHeader, StatCard, SectionTitle } from "@/components/ui-kit";
 import { ClockCard } from "./clock-card";
+import { wibToday } from "@/lib/wib";
 
 function jam(iso: string | null): string | null {
   if (!iso) return null;
   return new Date(iso).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 }
 function monthRange() {
-  const now = new Date();
-  const from = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-  const to = now.toISOString().slice(0, 10);
-  return { from, to };
+  const today = wibToday();
+  const from = `${today.slice(0, 7)}-01`;
+  return { from, to: today };
 }
 
 export default async function AbsensiPage() {

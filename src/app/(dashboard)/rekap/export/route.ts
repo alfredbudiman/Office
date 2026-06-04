@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getCompletedVideos } from "@/lib/rekap-data";
 import { totalDurationMs } from "@/lib/rekap";
+import { wibToday } from "@/lib/wib";
 import type { VideoType } from "@/lib/video-workflow";
 
 function csvCell(s: string) {
@@ -11,7 +12,7 @@ function csvCell(s: string) {
 export async function GET(request: Request) {
   await requireRole("owner");
   const url = new URL(request.url);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = wibToday();
   const from = url.searchParams.get("from") ?? today;
   const to = url.searchParams.get("to") ?? today;
   const editorId = url.searchParams.get("editor") || undefined;

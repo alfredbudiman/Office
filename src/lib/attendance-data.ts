@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { wibToday } from "@/lib/wib";
 
 export type AttendanceRow = {
   id: string; user_id: string; tanggal: string;
@@ -6,17 +7,13 @@ export type AttendanceRow = {
   progress_summary: string | null;
 };
 
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
 export async function getTodayAttendance(userId: string): Promise<AttendanceRow | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("attendance")
     .select("id, user_id, tanggal, clock_in, clock_out, progress_summary")
     .eq("user_id", userId)
-    .eq("tanggal", todayStr())
+    .eq("tanggal", wibToday())
     .maybeSingle();
   return (data as AttendanceRow) ?? null;
 }
