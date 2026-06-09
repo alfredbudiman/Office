@@ -1,10 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { parseBankKonten, summarize, type SheetRow } from "@/lib/bank-konten";
 
-// Helper: bikin baris dari array {teks, link?}.
+// Helper: bikin baris dari array {teks, link?}. Kolom 0 (A) kosong di sheet asli,
+// jadi helper menambahkan sel kosong di depan — argumen pertama = kolom NO.
 const row = (cells: Array<string | { v: string; link?: string }>): SheetRow => ({
-  values: cells.map((c) =>
-    typeof c === "string" ? { formattedValue: c } : { formattedValue: c.v, hyperlink: c.link },
+  values: [{ formattedValue: "" }, ...cells].map((c) =>
+    typeof c === "string"
+      ? { formattedValue: c }
+      : "v" in c
+        ? { formattedValue: c.v, hyperlink: c.link }
+        : c,
   ),
 });
 

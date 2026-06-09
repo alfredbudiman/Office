@@ -26,14 +26,15 @@ export type KontenGroup = { jenis: string; items: KontenItem[] };
 export type SheetCell = { formattedValue?: string; hyperlink?: string };
 export type SheetRow = { values?: SheetCell[] };
 
-// Indeks kolom di sheet (0-based). PROGRES terdiri dari 4 sub-kolom.
+// Indeks kolom di sheet (0-based). Kolom 0 (A) kosong di sheet aslinya,
+// jadi data mulai di kolom 1. PROGRES terdiri dari 4 sub-kolom.
 const COL = {
-  no: 0,
-  jenis: 1,
-  konten: 2,
-  progresStart: 3, // 3=On going, 4=Editing, 5=Revisi, 6=Fix/Done
-  link: 7,
-  postingStart: 8, // 8..10 = STATUS POSTING
+  no: 1,
+  jenis: 2,
+  konten: 3,
+  progresStart: 4, // 4=On going, 5=Editing, 6=Revisi, 7=Fix/Done
+  link: 8,
+  postingStart: 9, // 9 = STATUS POSTING
 };
 
 const PROGRES_STATUS: KontenStatus[] = ["ongoing", "editing", "revisi", "done"];
