@@ -6,6 +6,7 @@ const MENUS: Record<Role, MenuItem[]> = {
   owner: [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Video", href: "/video" },
+    { label: "Bank Konten", href: "/bank-konten" },
     { label: "Stok Konten", href: "/stok" },
     { label: "Rekap Kinerja", href: "/rekap" },
     { label: "Kelola User", href: "/users" },
@@ -15,6 +16,7 @@ const MENUS: Record<Role, MenuItem[]> = {
   editor: [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Video Saya", href: "/video" },
+    { label: "Bank Konten", href: "/bank-konten" },
     { label: "Absensi", href: "/absensi" },
   ],
   hrd: [

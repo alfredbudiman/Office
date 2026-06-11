@@ -7,6 +7,7 @@ describe("menuForRole", () => {
     expect(hrefs).toEqual([
       "/dashboard",
       "/video",
+      "/bank-konten",
       "/stok",
       "/rekap",
       "/users",
@@ -15,9 +16,9 @@ describe("menuForRole", () => {
     ]);
   });
 
-  it("editor hanya dashboard, video saya, absensi", () => {
+  it("editor mendapat dashboard, video saya, bank konten, absensi", () => {
     const hrefs = menuForRole("editor").map((m) => m.href);
-    expect(hrefs).toEqual(["/dashboard", "/video", "/absensi"]);
+    expect(hrefs).toEqual(["/dashboard", "/video", "/bank-konten", "/absensi"]);
   });
 
   it("hrd hanya dashboard dan absensi", () => {
