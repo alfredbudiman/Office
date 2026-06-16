@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  LayoutDashboard, Clapperboard, Library, Boxes, BarChart3, Users, Clock, Settings, Folder,
+  LayoutDashboard, Clapperboard, Library, Boxes, BarChart3, Users, Clock, Settings, Folder, UserSearch,
   type LucideIcon,
 } from "lucide-react";
 import { SproutLogo } from "@/components/brand/sprout-logo";
@@ -16,6 +16,7 @@ const ICONS: Record<string, LucideIcon> = {
   "/bank-konten": Library,
   "/stok": Boxes,
   "/rekap": BarChart3,
+  "/recruitment": UserSearch,
   "/users": Users,
   "/absensi": Clock,
   "/pengaturan": Settings,

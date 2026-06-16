@@ -9,6 +9,7 @@ const MENUS: Record<Role, MenuItem[]> = {
     { label: "Bank Konten", href: "/bank-konten" },
     { label: "Stok Konten", href: "/stok" },
     { label: "Rekap Kinerja", href: "/rekap" },
+    { label: "Recruitment", href: "/recruitment" },
     { label: "Kelola User", href: "/users" },
     { label: "Absensi", href: "/absensi" },
     { label: "Pengaturan", href: "/pengaturan" },
@@ -17,10 +18,12 @@ const MENUS: Record<Role, MenuItem[]> = {
     { label: "Dashboard", href: "/dashboard" },
     { label: "Video Saya", href: "/video" },
     { label: "Bank Konten", href: "/bank-konten" },
+    { label: "Recruitment", href: "/recruitment" },
     { label: "Absensi", href: "/absensi" },
   ],
   hrd: [
     { label: "Dashboard", href: "/dashboard" },
+    { label: "Recruitment", href: "/recruitment" },
     { label: "Absensi", href: "/absensi" },
   ],
 };

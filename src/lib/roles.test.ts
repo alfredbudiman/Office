@@ -10,20 +10,21 @@ describe("menuForRole", () => {
       "/bank-konten",
       "/stok",
       "/rekap",
+      "/recruitment",
       "/users",
       "/absensi",
       "/pengaturan",
     ]);
   });
 
-  it("editor mendapat dashboard, video saya, bank konten, absensi", () => {
+  it("editor mendapat dashboard, video saya, bank konten, recruitment, absensi", () => {
     const hrefs = menuForRole("editor").map((m) => m.href);
-    expect(hrefs).toEqual(["/dashboard", "/video", "/bank-konten", "/absensi"]);
+    expect(hrefs).toEqual(["/dashboard", "/video", "/bank-konten", "/recruitment", "/absensi"]);
   });
 
-  it("hrd hanya dashboard dan absensi", () => {
+  it("hrd mendapat dashboard, recruitment, absensi", () => {
     const hrefs = menuForRole("hrd").map((m) => m.href);
-    expect(hrefs).toEqual(["/dashboard", "/absensi"]);
+    expect(hrefs).toEqual(["/dashboard", "/recruitment", "/absensi"]);
   });
 
   it("role tak dikenal mendapat menu kosong (fail safe)", () => {
