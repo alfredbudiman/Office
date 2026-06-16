@@ -31,9 +31,9 @@ export function UserRowActions({ id, role, aktif }: { id: string; role: Role; ak
           });
         }}
       >
-        <option value="editor">editor</option>
-        <option value="hrd">hrd</option>
-        <option value="owner">owner</option>
+        <option value="editor">editor (konten)</option>
+        <option value="hrd">recruitment</option>
+        <option value="owner">owner (semua akses)</option>
       </select>
       <Button
         size="sm"

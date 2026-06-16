@@ -1,13 +1,14 @@
-import { requireProfile } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { getSetting } from "@/lib/settings";
 import { createClient } from "@/lib/supabase/server";
 import { rowToCandidate, type CandidateRow } from "@/lib/recruitment";
-import { RecruitmentGate } from "./gate";
+import { RecruitmentApp } from "./recruitment-app";
 
 export const metadata = { title: "Recruitment — Sproutlab" };
 
 export default async function RecruitmentPage() {
-  await requireProfile();
+  // Akses dibatasi role: owner (Alfred) & hrd (Sabina). Editor tidak bisa masuk.
+  await requireRole("owner", "hrd");
   const supabase = await createClient();
   const { data } = await supabase
     .from("recruitment_candidates")
@@ -20,7 +21,7 @@ export default async function RecruitmentPage() {
   const staleDays = parseInt((await getSetting("recruitment_stale_days")) ?? "7") || 7;
 
   return (
-    <RecruitmentGate
+    <RecruitmentApp
       candidates={candidates}
       followUpDays={followUpDays}
       staleDays={staleDays}
