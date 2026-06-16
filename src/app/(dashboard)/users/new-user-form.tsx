@@ -36,9 +36,9 @@ export function NewUserForm() {
       <div className="space-y-1">
         <Label htmlFor="role">Role</Label>
         <select id="role" name="role" className="h-9 rounded-md border px-2 text-sm">
-          <option value="editor">editor</option>
-          <option value="hrd">hrd</option>
-          <option value="owner">owner</option>
+          <option value="editor">editor (konten)</option>
+          <option value="hrd">recruitment</option>
+          <option value="owner">owner (semua akses)</option>
         </select>
         {state?.errors?.role && <p className="text-xs text-red-500">{state.errors.role}</p>}
       </div>

@@ -8,11 +8,11 @@ import { getSetting } from "@/lib/settings";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const profile = await requireProfile();
-  const items = menuForRole(profile.role);
+  const groups = menuForRole(profile.role);
   const driveFolderUrl = await getSetting("drive_folder_url");
   return (
     <div className="bg-paper flex min-h-screen">
-      <Sidebar items={items} nama={profile.nama} role={profile.role} driveFolderUrl={driveFolderUrl} />
+      <Sidebar groups={groups} nama={profile.nama} role={profile.role} driveFolderUrl={driveFolderUrl} />
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-20 flex h-14 items-center justify-end gap-1 border-b border-border/70 bg-background/70 px-6 backdrop-blur-md">
           <NotifBell />

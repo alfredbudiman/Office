@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { listVideos } from "@/lib/videos";
 import { actionsFor, typeLabel } from "@/lib/video-workflow";
@@ -9,6 +10,8 @@ import { getSetting } from "@/lib/settings";
 
 export default async function DashboardPage() {
   const profile = await requireProfile();
+  // Role recruitment (Sabina) tidak melihat konten — arahkan ke halaman Recruitment.
+  if (profile.role === "hrd") redirect("/recruitment");
   const videos = await listVideos();
   const driveFolderUrl = await getSetting("drive_folder_url");
 

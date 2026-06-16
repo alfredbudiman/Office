@@ -1,4 +1,4 @@
-import { requireProfile } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { listVideos } from "@/lib/videos";
 import { createClient } from "@/lib/supabase/server";
 import { VideoBoard } from "./video-board";
@@ -13,7 +13,7 @@ export default async function VideoPage() {
   // Jalankan paralel: auth/profil, daftar video, dan semua profil sekaligus
   // (daftar editor diturunkan dari profil — tidak perlu query terpisah).
   const [profile, videos, profsRes] = await Promise.all([
-    requireProfile(),
+    requireRole("owner", "editor"),
     listVideos(),
     supabase.from("profiles").select("id, nama, role, aktif"),
   ]);
