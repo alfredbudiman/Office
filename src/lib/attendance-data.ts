@@ -1,13 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import { localDateStr } from "@/lib/attendance";
 
 export type AttendanceRow = {
   id: string; user_id: string; tanggal: string;
   clock_in: string | null; clock_out: string | null;
 };
-
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export async function getTodayAttendance(userId: string): Promise<AttendanceRow | null> {
   const supabase = await createClient();
@@ -15,7 +12,23 @@ export async function getTodayAttendance(userId: string): Promise<AttendanceRow 
     .from("attendance")
     .select("id, user_id, tanggal, clock_in, clock_out")
     .eq("user_id", userId)
-    .eq("tanggal", todayStr())
+    .eq("tanggal", localDateStr())
+    .maybeSingle();
+  return (data as AttendanceRow) ?? null;
+}
+
+/** Shift yang masih berjalan: sudah clock in tapi belum clock out, APA PUN tanggalnya.
+ *  Dipakai agar shift malam yang melewati tengah malam tetap bisa di-clock-out esok harinya. */
+export async function getOpenAttendance(userId: string): Promise<AttendanceRow | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("attendance")
+    .select("id, user_id, tanggal, clock_in, clock_out")
+    .eq("user_id", userId)
+    .not("clock_in", "is", null)
+    .is("clock_out", null)
+    .order("tanggal", { ascending: false })
+    .limit(1)
     .maybeSingle();
   return (data as AttendanceRow) ?? null;
 }

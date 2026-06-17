@@ -1,7 +1,7 @@
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getTodayAttendance, listAttendance } from "@/lib/attendance-data";
-import { attendanceState, workedMs, sumWorkedMs } from "@/lib/attendance";
+import { getTodayAttendance, getOpenAttendance, listAttendance } from "@/lib/attendance-data";
+import { attendanceState, workedMs, sumWorkedMs, localDateStr } from "@/lib/attendance";
 import { formatDuration } from "@/lib/rekap";
 import { PageHeader, StatCard, SectionTitle } from "@/components/ui-kit";
 import { ClockCard } from "./clock-card";
@@ -11,10 +11,9 @@ function jam(iso: string | null): string | null {
   return new Date(iso).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 }
 function monthRange() {
-  const now = new Date();
-  const from = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-  const to = now.toISOString().slice(0, 10);
-  return { from, to };
+  const today = localDateStr(); // tanggal lokal Jakarta, mis. "2026-06-17"
+  const from = today.slice(0, 8) + "01"; // hari pertama bulan ini
+  return { from, to: today };
 }
 
 export default async function AbsensiPage() {
@@ -22,7 +21,10 @@ export default async function AbsensiPage() {
   const canViewAll = profile.role === "owner" || profile.role === "hrd";
   const { from, to } = monthRange();
 
-  const today = await getTodayAttendance(profile.id);
+  // Utamakan shift yang masih berjalan (mis. shift malam yang dimulai kemarin)
+  // supaya tombol Clock Out tetap muncul walau sudah ganti hari.
+  const open = await getOpenAttendance(profile.id);
+  const today = open ?? (await getTodayAttendance(profile.id));
   const rows = await listAttendance(from, to, canViewAll ? undefined : profile.id);
 
   const supabase = await createClient();
