@@ -21,15 +21,18 @@ export default async function AbsensiPage() {
   const canViewAll = profile.role === "owner" || profile.role === "hrd";
   const { from, to } = monthRange();
 
+  // Semua query dijalankan paralel (Promise.all) supaya tidak saling menunggu.
   // Utamakan shift yang masih berjalan (mis. shift malam yang dimulai kemarin)
   // supaya tombol Clock Out tetap muncul walau sudah ganti hari.
-  const open = await getOpenAttendance(profile.id);
-  const today = open ?? (await getTodayAttendance(profile.id));
-  const rows = await listAttendance(from, to, canViewAll ? undefined : profile.id);
-
   const supabase = await createClient();
-  const { data: profs } = await supabase.from("profiles").select("id, nama");
-  const namaById = new Map((profs ?? []).map((p: { id: string; nama: string }) => [p.id, p.nama]));
+  const [open, todayRow, rows, profsRes] = await Promise.all([
+    getOpenAttendance(profile.id),
+    getTodayAttendance(profile.id),
+    listAttendance(from, to, canViewAll ? undefined : profile.id),
+    supabase.from("profiles").select("id, nama"),
+  ]);
+  const today = open ?? todayRow;
+  const namaById = new Map(((profsRes.data ?? []) as { id: string; nama: string }[]).map((p) => [p.id, p.nama]));
 
   const myRows = rows.filter((r) => r.user_id === profile.id);
   const myTotal = sumWorkedMs(myRows);
