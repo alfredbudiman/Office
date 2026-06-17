@@ -1,6 +1,6 @@
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getTodayAttendance, listAttendance } from "@/lib/attendance-data";
+import { getTodayAttendance, getOpenAttendance, listAttendance } from "@/lib/attendance-data";
 import { attendanceState, workedMs, sumWorkedMs } from "@/lib/attendance";
 import { formatDuration } from "@/lib/rekap";
 import { PageHeader, StatCard, SectionTitle } from "@/components/ui-kit";
@@ -22,12 +22,18 @@ export default async function AbsensiPage() {
   const canViewAll = profile.role === "owner" || profile.role === "hrd";
   const { from, to } = monthRange();
 
-  const today = await getTodayAttendance(profile.id);
-  const rows = await listAttendance(from, to, canViewAll ? undefined : profile.id);
-
+  // Semua query dijalankan paralel (Promise.all) supaya tidak saling menunggu.
+  // Utamakan shift yang masih berjalan (mis. shift malam yang dimulai kemarin)
+  // supaya tombol Clock Out tetap muncul walau sudah ganti hari.
   const supabase = await createClient();
-  const { data: profs } = await supabase.from("profiles").select("id, nama");
-  const namaById = new Map((profs ?? []).map((p: { id: string; nama: string }) => [p.id, p.nama]));
+  const [open, todayRow, rows, profsRes] = await Promise.all([
+    getOpenAttendance(profile.id),
+    getTodayAttendance(profile.id),
+    listAttendance(from, to, canViewAll ? undefined : profile.id),
+    supabase.from("profiles").select("id, nama"),
+  ]);
+  const today = open ?? todayRow;
+  const namaById = new Map(((profsRes.data ?? []) as { id: string; nama: string }[]).map((p) => [p.id, p.nama]));
 
   const myRows = rows.filter((r) => r.user_id === profile.id);
   const myTotal = sumWorkedMs(myRows);
@@ -49,7 +55,33 @@ export default async function AbsensiPage() {
 
       <section className="space-y-3">
         <SectionTitle>{canViewAll ? "Rekap semua karyawan (bulan ini)" : "Rekap saya (bulan ini)"}</SectionTitle>
-        <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-card">
+
+        {/* Mobile: card list */}
+        <div className="space-y-2 sm:hidden">
+          {rows.map((r) => (
+            <div key={r.id} className="rounded-xl border border-border bg-card p-3 shadow-card">
+              <div className="flex items-center justify-between gap-2">
+                <p className="tnum text-sm font-medium">{new Date(r.tanggal).toLocaleDateString("id-ID")}</p>
+                <p className="tnum text-sm font-medium">{formatDuration(workedMs(r.clock_in, r.clock_out))}</p>
+              </div>
+              {canViewAll && (
+                <p className="mt-0.5 text-xs text-muted-foreground">{namaById.get(r.user_id) ?? "—"}</p>
+              )}
+              <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
+                <span className="tnum">Masuk: <span className="text-foreground">{jam(r.clock_in) ?? "—"}</span></span>
+                <span className="tnum">Pulang: <span className="text-foreground">{jam(r.clock_out) ?? "—"}</span></span>
+              </div>
+            </div>
+          ))}
+          {rows.length === 0 && (
+            <div className="rounded-xl border border-dashed border-border bg-card/50 px-4 py-8 text-center text-sm text-muted-foreground">
+              Belum ada data absensi bulan ini.
+            </div>
+          )}
+        </div>
+
+        {/* Desktop: table */}
+        <div className="hidden overflow-x-auto rounded-xl border border-border bg-card shadow-card sm:block">
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
               <tr>

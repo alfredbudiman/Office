@@ -34,11 +34,11 @@ export function VideoBoard({ cards }: { cards: Card[] }) {
       </div>
 
       {/* Kanban columns */}
-      <div className="flex gap-3 overflow-x-auto pb-4">
+      <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4 sm:mx-0 sm:snap-none sm:px-0">
         {STATUS_ORDER.map((status) => {
           const items = filtered.filter((c) => c.status === status);
           return (
-            <div key={status} className="w-64 shrink-0">
+            <div key={status} className="w-[78vw] shrink-0 snap-start sm:w-64 sm:snap-align-none">
               {/* Column header */}
               <div className="mb-2 flex items-center gap-2 px-1">
                 <span className="text-xs font-medium text-foreground/70">{STATUS_LABEL[status]}</span>

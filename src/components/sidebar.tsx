@@ -8,6 +8,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { SproutLogo } from "@/components/brand/sprout-logo";
+import { MobileDrawer } from "@/components/mobile-drawer";
 import type { MenuGroup } from "@/lib/roles";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -22,19 +23,24 @@ const ICONS: Record<string, LucideIcon> = {
   "/pengaturan": Settings,
 };
 
-export function Sidebar({
-  groups, nama, role, driveFolderUrl,
+function SidebarContent({
+  groups,
+  nama,
+  role,
+  driveFolderUrl,
+  onNavigate,
 }: {
   groups: MenuGroup[];
   nama: string;
   role: string;
   driveFolderUrl: string | null;
+  onNavigate?: () => void;
 }) {
   const pathname = usePathname();
   const initial = (nama?.trim()?.[0] ?? "?").toUpperCase();
 
   return (
-    <aside className="relative flex w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
+    <div className="flex h-full flex-col">
       {/* Brand */}
       <div className="flex items-center gap-3 px-5 py-6">
         <span className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-brand text-brand-foreground shadow-soft">
@@ -61,6 +67,7 @@ export function Sidebar({
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={onNavigate}
                   className="relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors"
                 >
                   {active && (
@@ -112,6 +119,45 @@ export function Sidebar({
           <p className="text-[11px] capitalize text-muted-foreground">{role}</p>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function Sidebar({
+  groups, nama, role, driveFolderUrl,
+}: {
+  groups: MenuGroup[];
+  nama: string;
+  role: string;
+  driveFolderUrl: string | null;
+}) {
+  return (
+    <aside className="relative hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
+      <SidebarContent groups={groups} nama={nama} role={role} driveFolderUrl={driveFolderUrl} />
     </aside>
+  );
+}
+
+export function MobileSidebar({
+  groups,
+  nama,
+  role,
+  driveFolderUrl,
+  open,
+  onClose,
+}: {
+  groups: MenuGroup[];
+  nama: string;
+  role: string;
+  driveFolderUrl: string | null;
+  open: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <MobileDrawer open={open} onClose={onClose}>
+      <div className="flex h-full flex-col border-r border-sidebar-border">
+        <SidebarContent groups={groups} nama={nama} role={role} driveFolderUrl={driveFolderUrl} onNavigate={onClose} />
+      </div>
+    </MobileDrawer>
   );
 }
