@@ -11,7 +11,7 @@ import { PLATFORMS, PLATFORM_LABEL, type Platform } from "@/lib/post-schedule";
 import { createSchedule } from "./actions";
 import type { VideoOption } from "@/lib/post-schedule-data";
 
-type BankOption = { title: string; link: string | null };
+type BankOption = { title: string; link: string | null; jenis: string };
 type PfState = Record<Platform, { on: boolean; date: string; time: string }>;
 
 const selCls =
@@ -29,7 +29,13 @@ export function ScheduleForm({
 }) {
   const [state, action, pending] = useActionState(createSchedule, null);
   const initialVideo = initialVideoId ? videoOptions.find((v) => v.id === initialVideoId) : undefined;
-  const [source, setSource] = useState<"manual" | "video" | "bank_konten">(initialVideo ? "video" : "manual");
+  const [source, setSource] = useState<"manual" | "video" | "bank_konten">(initialVideo ? "video" : bankOptions.length ? "bank_konten" : "manual");
+  // Bank Konten dikelompokkan per jenis (Shorts, Monolog, dll), index asli dipertahankan untuk pilih.
+  const bankByJenis = (() => {
+    const m = new Map<string, { idx: number; title: string }[]>();
+    bankOptions.forEach((b, i) => (m.get(b.jenis) ?? m.set(b.jenis, []).get(b.jenis)!).push({ idx: i, title: b.title }));
+    return [...m.entries()];
+  })();
   const [title, setTitle] = useState(initialVideo?.judul ?? "");
   const [driveUrl, setDriveUrl] = useState(initialVideo?.link_source ?? "");
   const [defTime, setDefTime] = useState("19:00");
@@ -91,7 +97,11 @@ export function ScheduleForm({
               <Label>Pilih dari Bank Konten</Label>
               <select className={selCls} defaultValue="" onChange={(e) => pickBank(e.target.value)}>
                 <option value="" disabled>— pilih —</option>
-                {bankOptions.map((b, i) => <option key={i} value={i}>{b.title}</option>)}
+                {bankByJenis.map(([jenis, items]) => (
+                  <optgroup key={jenis} label={jenis}>
+                    {items.map((it) => <option key={it.idx} value={it.idx}>{it.title}</option>)}
+                  </optgroup>
+                ))}
               </select>
             </div>
           )}

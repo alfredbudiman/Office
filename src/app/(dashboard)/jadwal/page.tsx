@@ -17,10 +17,9 @@ export default async function JadwalPage({ searchParams }: { searchParams: Promi
   ]);
 
   const bankOptions = bank.ok
-    ? bank.groups
-        .flatMap((g) => g.items)
-        .filter((i) => i.konten?.trim())
-        .map((i) => ({ title: i.konten, link: i.link }))
+    ? bank.groups.flatMap((g) =>
+        g.items.filter((i) => i.konten?.trim()).map((i) => ({ title: i.konten, link: i.link, jenis: g.jenis || "Lainnya" })),
+      )
     : [];
 
   return (
