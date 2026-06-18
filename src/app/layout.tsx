@@ -1,22 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Syne, DM_Sans, Space_Mono } from "next/font/google";
+import { Poppins, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
-// Display: Syne (modern, media-grade) — judul, angka besar, wordmark.
-const syne = Syne({
-  variable: "--font-syne",
+// Font utama: Poppins (sans-serif, enak dibaca) — body & heading.
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
-// Body/UI: DM Sans — bersih, readable di mobile.
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
-});
-
-// Angka tabular (jam, tanggal, hitungan): Space Mono — echo brand.
+// Angka tabular (jam, tanggal, hitungan): Space Mono.
 const spaceMono = Space_Mono({
   variable: "--font-space-mono",
   subsets: ["latin"],
@@ -42,7 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${syne.variable} ${dmSans.variable} ${spaceMono.variable} h-full antialiased`}
+      className={`${poppins.variable} ${spaceMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {children}
