@@ -8,12 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  rupiah, dayLabel, monthLabel, totalUnpaid,
+  rupiah, monthLabel, totalUnpaid,
   generateMondayLabText, generatePaText, generateLainnyaText, generateRekapText,
   DEFAULT_BOX_PRICE, type Category, type DebtPerson, type DebtCharge,
 } from "@/lib/debt";
 import {
-  addPerson, updatePerson, addMondayLab, ensurePaEntries, updateChargeAmount, addLainnya, togglePaid, deleteCharge,
+  addPerson, updatePerson, addMondayLab, ensurePaEntries, updateChargeAmount, addLainnya, togglePaid, deleteCharge, deleteColumn,
 } from "./actions";
 
 function wibMonth() { return new Date(new Date().getTime() + 7 * 3600000).toISOString().slice(0, 7); }
@@ -33,7 +33,7 @@ function compactNum(n: number): string {
 type Run = (fn: () => Promise<{ ok: boolean; error?: string }>, okMsg: string) => void;
 
 function chargeDetail(c: DebtCharge): string {
-  if (c.category === "monday_lab") return `${dayLabel(c.occurred_on)} · ${c.qty} box`;
+  if (c.category === "monday_lab") { const [, m, d] = c.occurred_on.split("-").map(Number); return `${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")} · ${c.qty}`; }
   if (c.category === "pa") return monthLabel(c.occurred_on);
   return `${c.description ?? "—"}${c.qty > 1 ? ` (${c.qty}×${rupiah(c.unit_price)})` : ""}`;
 }
@@ -198,11 +198,12 @@ function MondayForm({ activePeople, pending, run }: { activePeople: DebtPerson[]
 
 function PaControl({ pending, run }: { pending: boolean; run: Run }) {
   const [month, setMonth] = useState(wibMonth());
+  const label = monthLabel(`${month}-01`);
   return (
     <div className="flex flex-wrap items-end gap-2">
-      <div className="space-y-1"><Label>Siapkan PA untuk bulan</Label><Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="w-auto" /></div>
-      <Button size="sm" variant="secondary" disabled={pending} onClick={() => run(() => ensurePaEntries(month), "Bulan disiapkan")}>Siapkan bulan</Button>
-      <p className="w-full text-xs text-muted-foreground">PA bulan berjalan muncul otomatis. Pakai ini untuk menyiapkan bulan lain dari biaya PA tiap orang.</p>
+      <div className="space-y-1"><Label>Pilih bulan</Label><Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="w-auto" /></div>
+      <Button size="sm" disabled={pending} onClick={() => run(() => ensurePaEntries(month), `PA ${label} disiapkan`)}>Input PA bulan {label}</Button>
+      <p className="w-full text-xs text-muted-foreground">Mengisi PA semua orang aktif untuk bulan terpilih (dari biaya PA tiap orang). Bulan berjalan terisi otomatis. Hapus 1 bulan PA lewat tombol ✕ di kolomnya.</p>
     </div>
   );
 }
@@ -270,7 +271,19 @@ function MatrixSection({ title, kind, people, charges, pending, run, onOpenPerso
             <thead className="bg-muted/20 text-xs text-muted-foreground">
               <tr>
                 <th className="sticky left-0 z-10 bg-card px-3 py-2 text-left">Nama</th>
-                {visibleCols.map((k) => <th key={k} className="whitespace-nowrap px-2 py-2 text-center font-medium">{colLabel(k)}</th>)}
+                {visibleCols.map((k) => (
+                  <th key={k} className="whitespace-nowrap px-2 py-2 text-center font-medium">
+                    <span className="inline-flex items-center gap-1">
+                      {colLabel(k)}
+                      <button
+                        aria-label="Hapus kolom"
+                        disabled={pending}
+                        onClick={() => { if (window.confirm(`Hapus semua ${title} ${colLabel(k)}?`)) run(() => deleteColumn(kind, k), "Kolom dihapus"); }}
+                        className="text-muted-foreground/40 hover:text-destructive"
+                      ><X className="h-3 w-3" /></button>
+                    </span>
+                  </th>
+                ))}
                 {hidden > 0 && <th className="px-2 py-2 text-center"><button onClick={() => setExpanded(true)} className="font-medium text-brand hover:underline">+{hidden}</button></th>}
                 <th className="px-3 py-2 text-right">Total</th>
               </tr>

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import type { Category } from "@/lib/debt";
 
 function rev() { revalidatePath("/hutang"); }
 function num(v: FormDataEntryValue | null, def = 0) { const n = Number(String(v ?? "")); return Number.isFinite(n) ? n : def; }
@@ -114,6 +115,25 @@ export async function deleteCharge(id: string) {
   await requireRole("owner", "finance");
   const supabase = await createClient();
   const { error } = await supabase.from("debt_charges").delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  rev();
+  return { ok: true };
+}
+
+/** Hapus seluruh kolom: 1 tanggal (monday/lainnya) atau 1 bulan (pa). */
+export async function deleteColumn(category: Category, key: string) {
+  await requireRole("owner", "finance");
+  const supabase = await createClient();
+  let q = supabase.from("debt_charges").delete().eq("category", category);
+  if (category === "pa") {
+    const [y, m] = key.split("-").map(Number);
+    const start = `${key}-01`;
+    const next = m === 12 ? `${y + 1}-01-01` : `${y}-${String(m + 1).padStart(2, "0")}-01`;
+    q = q.gte("occurred_on", start).lt("occurred_on", next);
+  } else {
+    q = q.eq("occurred_on", key);
+  }
+  const { error } = await q;
   if (error) return { ok: false, error: error.message };
   rev();
   return { ok: true };
