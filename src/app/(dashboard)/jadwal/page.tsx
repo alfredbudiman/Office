@@ -4,8 +4,9 @@ import { listSchedule, listSchedulableVideos, listPostedKeys, listContentPrep } 
 import { getBankKonten } from "@/lib/bank-konten";
 import { SchedulerView } from "./scheduler-view";
 
-export default async function JadwalPage() {
+export default async function JadwalPage({ searchParams }: { searchParams: Promise<{ video?: string }> }) {
   await requireRole("owner", "social_media");
+  const { video: initialVideoId } = await searchParams;
 
   const [rows, videoOptions, bank, postedKeys, prep] = await Promise.all([
     listSchedule(),
@@ -28,7 +29,7 @@ export default async function JadwalPage() {
         title="Jadwal Posting"
         description="Jadwalkan konten ke YouTube, Shorts, TikTok & Instagram — pantau yang sudah & belum diposting."
       />
-      <SchedulerView rows={rows} videoOptions={videoOptions} bankOptions={bankOptions} postedKeys={postedKeys} prep={prep} />
+      <SchedulerView rows={rows} videoOptions={videoOptions} bankOptions={bankOptions} postedKeys={postedKeys} prep={prep} initialVideoId={initialVideoId} />
     </div>
   );
 }
