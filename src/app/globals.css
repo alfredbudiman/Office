@@ -10,10 +10,10 @@
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
   --color-brand-muted: var(--brand-muted);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-instrument-serif);
-  --font-heading: var(--font-geist-sans);
+  --font-sans: var(--font-dm-sans);
+  --font-mono: var(--font-space-mono);
+  --font-display: var(--font-syne);
+  --font-heading: var(--font-syne);
   --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.04), 0 2px 8px oklch(0 0 0 / 0.04);
   --shadow-card: 0 1px 0 oklch(0 0 0 / 0.02), 0 1px 3px oklch(0 0 0 / 0.06);
   --shadow-pop: 0 8px 30px oklch(0 0 0 / 0.10);
@@ -56,105 +56,95 @@
 }
 
 :root {
-  /* SPROUT: warm paper background, ink foreground, leaf-green brand */
-  --background: oklch(0.975 0.012 92);
-  --foreground: oklch(0.215 0.018 75);
-  --card: oklch(0.995 0.006 92);
-  --card-foreground: oklch(0.215 0.018 75);
-  --popover: oklch(0.995 0.006 92);
-  --popover-foreground: oklch(0.215 0.018 75);
-  --primary: oklch(0.27 0.025 80);
-  --primary-foreground: oklch(0.98 0.008 92);
-  --secondary: oklch(0.945 0.015 92);
-  --secondary-foreground: oklch(0.27 0.025 80);
-  --muted: oklch(0.945 0.015 92);
-  --muted-foreground: oklch(0.5 0.018 75);
-  --accent: oklch(0.94 0.022 130);
-  --accent-foreground: oklch(0.27 0.04 140);
-  --destructive: oklch(0.58 0.205 27);
-  --border: oklch(0.89 0.018 85);
-  --input: oklch(0.91 0.014 85);
-  --ring: oklch(0.55 0.13 145);
-  /* brand: leaf green */
-  --brand: oklch(0.52 0.14 145);
-  --brand-foreground: oklch(0.985 0.012 140);
-  --brand-muted: oklch(0.935 0.04 140);
-  --chart-1: oklch(0.52 0.14 145);
-  --chart-2: oklch(0.62 0.13 110);
-  --chart-3: oklch(0.7 0.12 80);
-  --chart-4: oklch(0.65 0.16 45);
-  --chart-5: oklch(0.55 0.15 25);
+  /* SPROUT — light-only, on-brand: white paper, deep-black ink, sprout-green brand.
+     Palette: Deep Black #0C0F0A · Sprout Green #2D7D3A · Bright Green #7ED957
+     · Cream #F0EDD8 · Gold #F5C518 (sumber: brand guidelines Sproutlab.id). */
+  --background: #ffffff;
+  --foreground: #0c0f0a;
+  --card: #ffffff;
+  --card-foreground: #0c0f0a;
+  --popover: #ffffff;
+  --popover-foreground: #0c0f0a;
+  /* primary = Sprout Green (tombol utama, link, ikon aktif) */
+  --primary: #2d7d3a;
+  --primary-foreground: #ffffff;
+  /* secondary = cream tint */
+  --secondary: #f1eedc;
+  --secondary-foreground: #20301c;
+  --muted: #f5f3ea;
+  --muted-foreground: #565b4e;
+  /* accent = bright-green wash (hover, highlight) */
+  --accent: #e7f4e0;
+  --accent-foreground: #1d5128;
+  --destructive: #d92d20;
+  --border: #e8e5d8;
+  --input: #dcd8c9;
+  --ring: #2d7d3a;
+  /* brand */
+  --brand: #2d7d3a;
+  --brand-foreground: #ffffff;
+  --brand-muted: #e1f5d6; /* bright-green wash untuk nav aktif */
+  --chart-1: #2d7d3a;
+  --chart-2: #7ed957;
+  --chart-3: #f5c518;
+  --chart-4: #4fa89d;
+  --chart-5: #c47d2b;
   --radius: 0.875rem;
-  --sidebar: oklch(0.96 0.018 95);
-  --sidebar-foreground: oklch(0.22 0.02 75);
-  --sidebar-primary: oklch(0.52 0.14 145);
-  --sidebar-primary-foreground: oklch(0.985 0.012 140);
-  --sidebar-accent: oklch(0.92 0.025 130);
-  --sidebar-accent-foreground: oklch(0.3 0.05 140);
-  --sidebar-border: oklch(0.88 0.022 88);
-  --sidebar-ring: oklch(0.52 0.14 145);
-}
-
-.dark {
-  --background: oklch(0.17 0.012 80);
-  --foreground: oklch(0.96 0.012 92);
-  --card: oklch(0.21 0.014 82);
-  --card-foreground: oklch(0.96 0.012 92);
-  --popover: oklch(0.21 0.014 82);
-  --popover-foreground: oklch(0.96 0.012 92);
-  --primary: oklch(0.96 0.012 92);
-  --primary-foreground: oklch(0.21 0.014 82);
-  --secondary: oklch(0.27 0.015 85);
-  --secondary-foreground: oklch(0.96 0.012 92);
-  --muted: oklch(0.27 0.015 85);
-  --muted-foreground: oklch(0.72 0.014 88);
-  --accent: oklch(0.3 0.03 140);
-  --accent-foreground: oklch(0.96 0.014 130);
-  --destructive: oklch(0.7 0.19 22);
-  --border: oklch(1 0 0 / 9%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.65 0.14 145);
-  --brand: oklch(0.7 0.16 145);
-  --brand-foreground: oklch(0.18 0.04 140);
-  --brand-muted: oklch(0.32 0.06 140);
-  --chart-1: oklch(0.7 0.16 145);
-  --chart-2: oklch(0.72 0.14 110);
-  --chart-3: oklch(0.78 0.13 80);
-  --chart-4: oklch(0.72 0.16 45);
-  --chart-5: oklch(0.66 0.16 25);
-  --sidebar: oklch(0.19 0.014 82);
-  --sidebar-foreground: oklch(0.96 0.012 92);
-  --sidebar-primary: oklch(0.7 0.16 145);
-  --sidebar-primary-foreground: oklch(0.18 0.04 140);
-  --sidebar-accent: oklch(0.3 0.03 140);
-  --sidebar-accent-foreground: oklch(0.96 0.014 130);
-  --sidebar-border: oklch(1 0 0 / 9%);
-  --sidebar-ring: oklch(0.65 0.14 145);
+  --sidebar: #fbfaf4;
+  --sidebar-foreground: #0c0f0a;
+  --sidebar-primary: #2d7d3a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e7f4e0;
+  --sidebar-accent-foreground: #1d5128;
+  --sidebar-border: #eceadd;
+  --sidebar-ring: #2d7d3a;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    @apply font-sans;
+    background: var(--background);
+  }
   body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "cv11", "ss01";
+    @apply text-foreground;
+    background: transparent;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  html {
-    @apply font-sans;
+  /* Tekstur halus seluruh app — karakter "print/media" Sprout, sangat tipis.
+     Dipasang di belakang konten (z-index:-1) supaya tidak mengganggu keterbacaan. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(1100px 480px at 50% -16%, rgba(45, 125, 58, 0.05), transparent 62%),
+      radial-gradient(820px 420px at 100% 0%, rgba(245, 197, 24, 0.035), transparent 60%);
   }
-  /* Display serif untuk wordmark & headline editorial */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* Display: Syne — wordmark & headline */
   .font-display {
-    font-family: var(--font-display), Georgia, serif;
-    font-feature-settings: "ss01", "salt";
-    letter-spacing: -0.01em;
+    font-family: var(--font-display), system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
   /* Angka metrik & label rapi-rata (tabular) */
   .tnum { font-variant-numeric: tabular-nums; }
   /* Selection pakai aksen brand */
-  ::selection { background: oklch(0.52 0.14 145 / 0.22); }
+  ::selection { background: rgba(45, 125, 58, 0.18); }
   /* Scrollbar halus */
   * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
   *::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -168,17 +158,7 @@
     background: color-mix(in oklch, var(--muted-foreground) 45%, transparent);
     background-clip: content-box;
   }
-  /* Paper grain — tekstur halus, hanya muncul di mode terang */
-  .bg-paper {
-    background-color: var(--background);
-    background-image:
-      radial-gradient(circle at 12% 18%, oklch(0.52 0.14 145 / 0.05) 0, transparent 32%),
-      radial-gradient(circle at 88% 8%, oklch(0.65 0.16 45 / 0.045) 0, transparent 38%),
-      radial-gradient(circle at 50% 100%, oklch(0.62 0.13 110 / 0.04) 0, transparent 40%);
-  }
-  .dark .bg-paper {
-    background-image:
-      radial-gradient(circle at 12% 18%, oklch(0.7 0.16 145 / 0.07) 0, transparent 35%),
-      radial-gradient(circle at 88% 8%, oklch(0.72 0.16 45 / 0.05) 0, transparent 40%);
-  }
+  /* Tekstur kini global di body::before/::after — .bg-paper jadi transparan
+     supaya konten menumpang di atas tekstur tanpa menimpanya. */
+  .bg-paper { background-color: transparent; }
 }

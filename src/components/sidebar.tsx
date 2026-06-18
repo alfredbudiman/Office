@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Clapperboard, Library, Boxes, BarChart3, Users, Clock, Settings, Folder, UserSearch,
   type LucideIcon,
 } from "lucide-react";
-import { SproutLogo } from "@/components/brand/sprout-logo";
+import Image from "next/image";
 import { MobileDrawer } from "@/components/mobile-drawer";
 import type { MenuGroup } from "@/lib/roles";
 
@@ -42,22 +42,25 @@ function SidebarContent({
   return (
     <div className="flex h-full flex-col">
       {/* Brand */}
-      <div className="flex items-center gap-3 px-5 py-6">
-        <span className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-brand text-brand-foreground shadow-soft">
-          <SproutLogo size={22} />
-          <span className="pointer-events-none absolute -inset-1 rounded-2xl bg-brand/15 blur-md -z-10" />
-        </span>
-        <div className="leading-tight">
-          <p className="font-display text-[22px] leading-none tracking-tight">SPROUT</p>
-          <p className="mt-1 text-[11px] text-muted-foreground">Dashboard Tim</p>
-        </div>
+      <div className="flex flex-col items-center gap-1.5 px-5 py-6">
+        <Image
+          src="/sprout-logo.png"
+          alt="SPROUT"
+          width={644}
+          height={575}
+          priority
+          className="h-14 w-auto"
+        />
+        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+          Dashboard Tim
+        </p>
       </div>
 
       {/* Nav */}
       <nav className="flex flex-1 flex-col gap-2 px-3">
         {groups.map((group, gi) => (
           <div key={group.section ?? `g${gi}`} className="flex flex-col gap-0.5">
-            <p className="px-3 pb-1 pt-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
+            <p className="font-mono px-3 pb-1 pt-2 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground/70">
               {group.section ?? "Menu"}
             </p>
             {group.items.map((item) => {

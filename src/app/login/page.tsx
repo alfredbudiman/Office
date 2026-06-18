@@ -7,26 +7,26 @@ import { login } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SproutLogo } from "@/components/brand/sprout-logo";
+import Image from "next/image";
 
 export default function LoginPage() {
   const [state, formAction, pending] = useActionState(login, null);
   return (
     <div className="bg-paper relative flex min-h-screen items-center justify-center overflow-hidden p-4">
-      {/* Blob organic warm */}
+      {/* Blob organik — hijau Sprout & gold tipis di atas putih */}
       <motion.div
         aria-hidden
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.2 }}
-        className="pointer-events-none absolute -top-24 -left-20 h-[420px] w-[420px] rounded-full bg-brand/15 blur-[120px] -z-10"
+        className="pointer-events-none absolute -top-24 -left-20 h-[420px] w-[420px] rounded-full bg-brand/12 blur-[120px] -z-10"
       />
       <motion.div
         aria-hidden
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.2, delay: 0.2 }}
-        className="pointer-events-none absolute -bottom-32 -right-16 h-[360px] w-[360px] rounded-full bg-[oklch(0.7_0.12_60/0.18)] blur-[110px] -z-10"
+        className="pointer-events-none absolute -bottom-32 -right-16 h-[360px] w-[360px] rounded-full bg-[#7ed957]/15 blur-[110px] -z-10"
       />
 
       <motion.div
@@ -36,21 +36,26 @@ export default function LoginPage() {
         className="w-full max-w-sm"
       >
         <div className="mb-7 flex flex-col items-center text-center">
-          <motion.span
-            initial={{ scale: 0.7, rotate: -8, opacity: 0 }}
-            animate={{ scale: 1, rotate: 0, opacity: 1 }}
-            transition={{ delay: 0.15, type: "spring", stiffness: 220, damping: 18 }}
-            className="mb-4 flex h-14 w-14 items-center justify-center rounded-3xl bg-brand text-brand-foreground shadow-soft"
+          <motion.div
+            initial={{ scale: 0.85, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.12, type: "spring", stiffness: 220, damping: 20 }}
           >
-            <SproutLogo size={30} />
-          </motion.span>
-          <h1 className="font-display text-3xl leading-none tracking-tight">SPROUT</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+            <Image
+              src="/sprout-logo.png"
+              alt="SPROUT — Be Fruitful and Multiply"
+              width={644}
+              height={575}
+              priority
+              className="h-28 w-auto"
+            />
+          </motion.div>
+          <p className="mt-4 text-sm text-muted-foreground">
             Tempat tim tumbuh dan menerbitkan karya.
           </p>
         </div>
 
-        <div className="rounded-3xl border border-border/70 bg-card/85 p-7 shadow-card backdrop-blur-sm">
+        <div className="rounded-3xl border border-border bg-card p-7 shadow-pop">
           <h2 className="mb-5 font-display text-xl tracking-tight">
             Selamat datang kembali
           </h2>

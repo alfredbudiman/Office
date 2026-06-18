@@ -43,7 +43,7 @@ export default async function VideoDetailPage({ params }: { params: Promise<{ id
             Kembali
           </Link>
           <div className="mt-3 flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight">{video.judul}</h1>
+            <h1 className="font-display text-2xl tracking-tight sm:text-[28px]">{video.judul}</h1>
             <StatusBadge status={video.status} />
           </div>
           <p className="mt-1 text-sm text-muted-foreground">

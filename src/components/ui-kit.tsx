@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-/** Header halaman: judul (display serif) + deskripsi opsional, aksi di kanan. */
+/** Header halaman: judul (Syne display) + deskripsi opsional, aksi di kanan. */
 export function PageHeader({
   title,
   description,
@@ -25,7 +25,7 @@ export function PageHeader({
   );
 }
 
-/** Kartu metrik — warm card, angka pakai serif display untuk feel editorial. */
+/** Kartu metrik — kartu putih, angka pakai Syne display untuk feel editorial. */
 export function StatCard({
   label,
   value,
