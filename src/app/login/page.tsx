@@ -7,7 +7,7 @@ import { login } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SproutLogo } from "@/components/brand/sprout-logo";
+import Image from "next/image";
 
 export default function LoginPage() {
   const [state, formAction, pending] = useActionState(login, null);
@@ -36,16 +36,21 @@ export default function LoginPage() {
         className="w-full max-w-sm"
       >
         <div className="mb-7 flex flex-col items-center text-center">
-          <motion.span
-            initial={{ scale: 0.7, rotate: -8, opacity: 0 }}
-            animate={{ scale: 1, rotate: 0, opacity: 1 }}
-            transition={{ delay: 0.15, type: "spring", stiffness: 220, damping: 18 }}
-            className="mb-4 flex h-14 w-14 items-center justify-center rounded-3xl bg-brand text-brand-foreground shadow-soft"
+          <motion.div
+            initial={{ scale: 0.85, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.12, type: "spring", stiffness: 220, damping: 20 }}
           >
-            <SproutLogo size={30} />
-          </motion.span>
-          <h1 className="font-display text-3xl leading-none tracking-tight">SPROUT</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+            <Image
+              src="/sprout-logo.png"
+              alt="SPROUT — Be Fruitful and Multiply"
+              width={644}
+              height={575}
+              priority
+              className="h-28 w-auto"
+            />
+          </motion.div>
+          <p className="mt-4 text-sm text-muted-foreground">
             Tempat tim tumbuh dan menerbitkan karya.
           </p>
         </div>
