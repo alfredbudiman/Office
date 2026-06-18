@@ -9,8 +9,13 @@ import {
 } from "@/lib/bank-konten";
 import { PageHeader, StatCard, SectionTitle } from "@/components/ui-kit";
 import { ExternalLink, FileSpreadsheet, FolderOpen, CheckCircle2 } from "lucide-react";
+import { listPostedKeys } from "@/lib/post-schedule-data";
+import { contentKey } from "@/lib/post-schedule";
+import { PostedToggle } from "@/components/posted-toggle";
 
 export const metadata = { title: "Bank Konten" };
+
+function bankKey(title: string) { return contentKey({ video_id: null, title }); }
 
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/1ZOlVV-bJKUhRUqUKCSsczAPv8pk5X5fd1sYS8bVcPvM/edit";
@@ -46,8 +51,10 @@ function DriveLink({ link }: { link: string | null }) {
 }
 
 export default async function BankKontenPage() {
-  await requireRole("owner", "editor");
+  const profile = await requireRole("owner", "editor", "social_media");
+  const canManage = profile.role === "owner" || profile.role === "social_media";
   const result = await getBankKonten();
+  const postedSet = new Set(canManage ? await listPostedKeys() : []);
 
   return (
     <div>
@@ -68,13 +75,13 @@ export default async function BankKontenPage() {
       {!result.ok ? (
         <NotConfigured reason={result.error} />
       ) : (
-        <BankKontenView groups={result.groups} />
+        <BankKontenView groups={result.groups} canManage={canManage} postedSet={postedSet} />
       )}
     </div>
   );
 }
 
-function BankKontenView({ groups }: { groups: KontenGroup[] }) {
+function BankKontenView({ groups, canManage, postedSet }: { groups: KontenGroup[]; canManage: boolean; postedSet: Set<string> }) {
   const s = summarize(groups);
 
   if (s.total === 0) {
@@ -125,20 +132,23 @@ function BankKontenView({ groups }: { groups: KontenGroup[] }) {
             </div>
             <div className="divide-y divide-border/60">
               {g.items.map((item, i) => (
-                <div key={`${item.konten}-${i}`} className="flex items-center gap-3 px-4 py-2.5 text-sm">
+                <div key={`${item.konten}-${i}`} className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 text-sm">
                   <span className="tnum w-6 shrink-0 text-xs text-muted-foreground/70">{item.no ?? ""}</span>
                   <span className="min-w-0 flex-1 truncate">{item.konten}</span>
-                  {item.posted && (
-                    <span className="hidden shrink-0 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-medium text-white sm:inline">
-                      posting
-                    </span>
-                  )}
                   <span className="shrink-0">
                     <StatusPill status={item.status} />
                   </span>
                   <span className="w-12 shrink-0 text-right">
                     <DriveLink link={item.link} />
                   </span>
+                  {canManage && (
+                    <PostedToggle
+                      contentKey={bankKey(item.konten)}
+                      sourceType="bank_konten"
+                      title={item.konten}
+                      initial={postedSet.has(bankKey(item.konten))}
+                    />
+                  )}
                 </div>
               ))}
             </div>

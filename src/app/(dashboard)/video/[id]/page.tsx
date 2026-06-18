@@ -9,6 +9,8 @@ import { StatusActions } from "./status-actions";
 import { Comments } from "./comments";
 import { StatusBadge } from "@/components/status-badge";
 import { SectionTitle } from "@/components/ui-kit";
+import { listPostedKeys } from "@/lib/post-schedule-data";
+import { PostedToggle } from "@/components/posted-toggle";
 
 export default async function VideoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -25,6 +27,9 @@ export default async function VideoDetailPage({ params }: { params: Promise<{ id
   const namaById = new Map((profs ?? []).map((p: { id: string; nama: string }) => [p.id, p.nama]));
 
   const actions = actionsFor(video.status, profile.role);
+  const canManageSchedule = profile.role === "owner" || profile.role === "social_media";
+  const isFinalish = video.status === "final" || video.status === "tayang";
+  const postedSosmed = canManageSchedule && isFinalish ? (await listPostedKeys()).includes(`v:${video.id}`) : false;
   const commentView = comments.map((c) => ({
     id: c.id, isi: c.isi, created_at: c.created_at,
     nama: c.user_id ? namaById.get(c.user_id) ?? "—" : "—",
@@ -45,6 +50,16 @@ export default async function VideoDetailPage({ params }: { params: Promise<{ id
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <h1 className="font-display text-2xl tracking-tight sm:text-[28px]">{video.judul}</h1>
             <StatusBadge status={video.status} />
+            {canManageSchedule && isFinalish && (
+              <PostedToggle
+                contentKey={`v:${video.id}`}
+                sourceType="video"
+                title={video.judul}
+                videoId={video.id}
+                initial={postedSosmed}
+                label="sudah diposting (sosmed)"
+              />
+            )}
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {typeLabel(video)}
