@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Trash2, Check, Copy, Users, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Check, Copy, Users, ChevronDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,15 @@ function wibMonth() { return new Date(new Date().getTime() + 7 * 3600000).toISOS
 function wibDateStr() { return new Date(new Date().getTime() + 7 * 3600000).toISOString().slice(0, 10); }
 const selCls = "h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 const CAT_LABEL: Record<Category, string> = { monday_lab: "Monday Lab", pa: "PA", lainnya: "Lainnya" };
+const MON_SHORT = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+const VISIBLE_COLS = 4; // kolom terbaru yang ditampilkan; sisanya disembunyikan tapi tetap dihitung
+function shortDay(ymd: string) { const [, m, d] = ymd.split("-").map(Number); return `${d} ${MON_SHORT[m - 1]}`; }
+function shortMonth(ym: string) { const [y, m] = ym.split("-").map(Number); return `${MON_SHORT[m - 1]} '${String(y).slice(2)}`; }
+function compactNum(n: number): string {
+  if (n >= 1000000) return String(Math.round(n / 100000) / 10).replace(/\.0$/, "") + "jt";
+  if (n >= 1000) return Math.round(n / 1000) + "k";
+  return String(n);
+}
 
 type Run = (fn: () => Promise<{ ok: boolean; error?: string }>, okMsg: string) => void;
 
@@ -213,48 +222,115 @@ function LainnyaForm({ activePeople, pending, run }: { activePeople: DebtPerson[
 }
 
 function Recap({ people, charges, pending, run }: { people: DebtPerson[]; charges: DebtCharge[]; pending: boolean; run: Run }) {
-  const [showPaid, setShowPaid] = useState(false);
-  const byPerson = useMemo(() => {
-    const m = new Map<string, DebtCharge[]>();
-    for (const c of charges) (m.get(c.person_id) ?? m.set(c.person_id, []).get(c.person_id)!).push(c);
-    for (const list of m.values()) list.sort((a, b) => (b.occurred_on.localeCompare(a.occurred_on)) || a.category.localeCompare(b.category));
-    return m;
-  }, [charges]);
-
-  const cards = people
-    .map((p) => {
-      const all = byPerson.get(p.id) ?? [];
-      const shown = showPaid ? all : all.filter((c) => !c.paid);
-      const unpaid = all.filter((c) => !c.paid).reduce((a, c) => a + c.amount, 0);
-      return { p, shown, unpaid };
-    })
-    .filter((x) => x.shown.length > 0);
-
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const rowsPeople = people.filter((p) => p.active || charges.some((c) => c.person_id === p.id));
+  const detailPerson = people.find((p) => p.id === detailId) ?? null;
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg tracking-tight">Rekap per orang</h2>
-        <button onClick={() => setShowPaid((v) => !v)} className="text-xs font-medium text-brand hover:underline">
-          {showPaid ? "Sembunyikan yang lunas" : "Tampilkan yang lunas"}
-        </button>
+      <div className="flex flex-wrap items-center justify-between gap-1">
+        <h2 className="font-display text-lg tracking-tight">Rekap</h2>
+        <span className="text-[11px] text-muted-foreground">klik sel = tandai lunas (hijau) · klik nama = detail / edit / hapus</span>
       </div>
-      {cards.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-card/50 px-4 py-10 text-center text-sm text-muted-foreground">
-          {showPaid ? "Belum ada catatan." : "Tidak ada tagihan belum lunas. 🎉"}
-        </div>
-      ) : (
-        cards.map(({ p, shown, unpaid }) => (
-          <div key={p.id} className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
-            <div className="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-2.5">
-              <span className="font-semibold">{p.name}</span>
-              <span className="tnum text-sm">belum lunas: <span className="font-semibold text-brand">{rupiah(unpaid)}</span></span>
-            </div>
-            <div className="divide-y divide-border/60">
-              {shown.map((c) => <ChargeLine key={c.id} charge={c} pending={pending} run={run} />)}
-            </div>
-          </div>
-        ))
+      <MatrixSection title="Monday Lab" kind="monday_lab" people={rowsPeople} charges={charges} pending={pending} run={run} onOpenPerson={setDetailId} />
+      <MatrixSection title="PA" kind="pa" people={rowsPeople} charges={charges} pending={pending} run={run} onOpenPerson={setDetailId} />
+      <MatrixSection title="Lainnya" kind="lainnya" people={rowsPeople} charges={charges} pending={pending} run={run} onOpenPerson={setDetailId} />
+      {detailPerson && (
+        <PersonDetail person={detailPerson} charges={charges.filter((c) => c.person_id === detailPerson.id)} pending={pending} run={run} onClose={() => setDetailId(null)} />
       )}
+    </div>
+  );
+}
+
+function MatrixSection({ title, kind, people, charges, pending, run, onOpenPerson }: {
+  title: string; kind: Category; people: DebtPerson[]; charges: DebtCharge[]; pending: boolean; run: Run; onOpenPerson: (id: string) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const rows = charges.filter((c) => c.category === kind);
+  const colKey = (c: DebtCharge) => (kind === "pa" ? c.occurred_on.slice(0, 7) : c.occurred_on);
+  const colLabel = (k: string) => (kind === "pa" ? shortMonth(k) : shortDay(k));
+  const allCols = [...new Set(rows.map(colKey))].sort().reverse(); // terbaru di kiri
+  const visibleCols = expanded ? allCols : allCols.slice(0, VISIBLE_COLS);
+  const hidden = allCols.length - visibleCols.length;
+  const cellMap = new Map<string, DebtCharge[]>();
+  rows.forEach((c) => { const k = `${c.person_id}|${colKey(c)}`; (cellMap.get(k) ?? cellMap.set(k, []).get(k)!).push(c); });
+  const unpaidOf = (pid: string) => rows.filter((c) => c.person_id === pid && !c.paid).reduce((a, c) => a + c.amount, 0);
+  const total = rows.filter((c) => !c.paid).reduce((a, c) => a + c.amount, 0);
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
+      <div className="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-2.5">
+        <span className="font-semibold">{title}</span>
+        <span className="tnum text-xs text-muted-foreground">belum lunas: <span className="font-semibold text-brand">{rupiah(total)}</span></span>
+      </div>
+      {allCols.length === 0 ? (
+        <p className="px-4 py-6 text-center text-sm text-muted-foreground">Belum ada data.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-sm">
+            <thead className="bg-muted/20 text-xs text-muted-foreground">
+              <tr>
+                <th className="sticky left-0 z-10 bg-card px-3 py-2 text-left">Nama</th>
+                {visibleCols.map((k) => <th key={k} className="whitespace-nowrap px-2 py-2 text-center font-medium">{colLabel(k)}</th>)}
+                {hidden > 0 && <th className="px-2 py-2 text-center"><button onClick={() => setExpanded(true)} className="font-medium text-brand hover:underline">+{hidden}</button></th>}
+                <th className="px-3 py-2 text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {people.map((p) => (
+                <tr key={p.id} className="border-t border-border">
+                  <td className="sticky left-0 z-10 whitespace-nowrap bg-card px-3 py-1.5">
+                    <button onClick={() => onOpenPerson(p.id)} className="font-medium hover:text-brand hover:underline">{p.name}</button>
+                  </td>
+                  {visibleCols.map((k) => {
+                    const cs = cellMap.get(`${p.id}|${k}`) ?? [];
+                    return <td key={k} className="px-2 py-1.5 text-center">{cs.length ? <MatrixCell charges={cs} kind={kind} pending={pending} run={run} /> : <span className="text-muted-foreground/25">·</span>}</td>;
+                  })}
+                  {hidden > 0 && <td className="px-2 py-1.5 text-center text-muted-foreground/40">…</td>}
+                  <td className="tnum px-3 py-1.5 text-right font-medium">{rupiah(unpaidOf(p.id))}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {expanded && allCols.length > VISIBLE_COLS && (
+        <button onClick={() => setExpanded(false)} className="w-full border-t border-border py-1.5 text-xs text-muted-foreground hover:text-foreground">Tampilkan lebih sedikit</button>
+      )}
+    </div>
+  );
+}
+
+function MatrixCell({ charges, kind, pending, run }: { charges: DebtCharge[]; kind: Category; pending: boolean; run: Run }) {
+  const allPaid = charges.every((c) => c.paid);
+  const amount = charges.reduce((a, c) => a + c.amount, 0);
+  const pax = charges.reduce((a, c) => a + c.qty, 0);
+  const display = kind === "monday_lab" ? String(pax) : compactNum(amount);
+  const title = charges.map((c) => `${rupiah(c.amount)}${c.description ? " · " + c.description : ""}`).join(" · ");
+  function toggle() { charges.forEach((c) => { if (c.paid === allPaid) run(() => togglePaid(c.id, !allPaid), ""); }); }
+  return (
+    <button title={title} disabled={pending} onClick={toggle}
+      className={`tnum rounded-md px-2 py-0.5 text-xs font-medium ${allPaid ? "bg-[#dff3d3] text-[#1d5128]" : "bg-muted hover:bg-accent"}`}>
+      {display}{allPaid ? " ✓" : ""}
+    </button>
+  );
+}
+
+function PersonDetail({ person, charges, pending, run, onClose }: {
+  person: DebtPerson; charges: DebtCharge[]; pending: boolean; run: Run; onClose: () => void;
+}) {
+  const sorted = [...charges].sort((a, b) => b.occurred_on.localeCompare(a.occurred_on) || a.category.localeCompare(b.category));
+  const unpaid = charges.filter((c) => !c.paid).reduce((a, c) => a + c.amount, 0);
+  return (
+    <div className="fixed inset-0 z-40 flex items-end justify-center bg-foreground/40 backdrop-blur-sm sm:items-center sm:p-4" onClick={onClose}>
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-border bg-card shadow-pop sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="sticky top-0 flex items-center justify-between border-b border-border bg-muted/30 px-4 py-3 backdrop-blur">
+          <span className="font-semibold">{person.name} <span className="ml-1 text-sm font-normal text-muted-foreground">· belum lunas {rupiah(unpaid)}</span></span>
+          <Button size="icon-xs" variant="ghost" onClick={onClose} aria-label="Tutup"><X className="h-4 w-4" /></Button>
+        </div>
+        <div className="divide-y divide-border/60">
+          {sorted.length === 0 ? <p className="px-4 py-6 text-center text-sm text-muted-foreground">Belum ada catatan.</p> : sorted.map((c) => <ChargeLine key={c.id} charge={c} pending={pending} run={run} />)}
+        </div>
+      </div>
     </div>
   );
 }
