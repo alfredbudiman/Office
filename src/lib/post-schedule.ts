@@ -28,6 +28,13 @@ export type ScheduleRow = {
   created_at: string;
 };
 
+export type ContentPrep = {
+  content_key: string;
+  thumbnail_url: string | null;
+  description: string | null;
+  tags: string | null;
+};
+
 /** Kunci pengelompokan checklist: per video (kalau ada) atau per judul. */
 export function contentKey(row: Pick<ScheduleRow, "video_id" | "title">): string {
   return row.video_id ? `v:${row.video_id}` : `t:${row.title.trim().toLowerCase()}`;
@@ -71,4 +78,35 @@ export function buildChecklist(rows: ScheduleRow[]): ChecklistContentRow[] {
 /** Progres keseluruhan: berapa post yang sudah diposting dari total. */
 export function scheduleProgress(rows: ScheduleRow[]): { posted: number; total: number } {
   return { posted: rows.filter((r) => r.status === "posted").length, total: rows.length };
+}
+
+/** Set content_key dari konten yang sudah punya minimal 1 jadwal. */
+export function scheduledContentKeys(rows: ScheduleRow[]): Set<string> {
+  return new Set(rows.map(contentKey));
+}
+
+export type ContentGroup = {
+  key: string;
+  title: string;
+  source_type: SourceType;
+  video_id: string | null;
+  drive_url: string | null;
+  rows: ScheduleRow[];
+};
+
+/** Kelompokkan jadwal per konten (untuk panel "Kelola konten"). */
+export function groupByContent(rows: ScheduleRow[]): ContentGroup[] {
+  const map = new Map<string, ContentGroup>();
+  for (const r of rows) {
+    const key = contentKey(r);
+    let g = map.get(key);
+    if (!g) {
+      g = { key, title: r.title, source_type: r.source_type, video_id: r.video_id, drive_url: r.drive_url, rows: [] };
+      map.set(key, g);
+    }
+    g.rows.push(r);
+    if (!g.drive_url && r.drive_url) g.drive_url = r.drive_url;
+  }
+  for (const g of map.values()) g.rows.sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at));
+  return [...map.values()];
 }

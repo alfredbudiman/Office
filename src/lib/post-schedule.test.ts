@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildChecklist, scheduleProgress, contentKey, type ScheduleRow } from "@/lib/post-schedule";
+import { buildChecklist, scheduleProgress, contentKey, scheduledContentKeys, groupByContent, type ScheduleRow } from "@/lib/post-schedule";
 
 function row(p: Partial<ScheduleRow>): ScheduleRow {
   return {
@@ -60,5 +60,30 @@ describe("scheduleProgress", () => {
   it("hitung posted dari total", () => {
     const rows = [row({ status: "posted" }), row({ status: "scheduled" }), row({ status: "posted" })];
     expect(scheduleProgress(rows)).toEqual({ posted: 2, total: 3 });
+  });
+});
+
+describe("scheduledContentKeys", () => {
+  it("kumpulan content_key unik dari jadwal", () => {
+    const keys = scheduledContentKeys([
+      row({ video_id: "v1", platform: "youtube" }),
+      row({ video_id: "v1", platform: "tiktok" }),
+      row({ video_id: null, title: "Manual A" }),
+    ]);
+    expect(keys.has("v:v1")).toBe(true);
+    expect(keys.has("t:manual a")).toBe(true);
+    expect(keys.size).toBe(2);
+  });
+});
+
+describe("groupByContent", () => {
+  it("gabungkan baris per konten + urutkan jadwalnya", () => {
+    const g = groupByContent([
+      row({ video_id: "v1", title: "Pod", platform: "tiktok", scheduled_at: "2026-06-20T20:00:00+07:00" }),
+      row({ video_id: "v1", title: "Pod", platform: "youtube", scheduled_at: "2026-06-18T19:00:00+07:00", drive_url: "x" }),
+    ]);
+    expect(g).toHaveLength(1);
+    expect(g[0].rows.map((r) => r.platform)).toEqual(["youtube", "tiktok"]); // terurut waktu
+    expect(g[0].drive_url).toBe("x");
   });
 });

@@ -7,6 +7,7 @@ import { PageHeader, StatCard, SectionTitle } from "@/components/ui-kit";
 import { StatusBadge } from "@/components/status-badge";
 import { Inbox, PackageCheck, Loader, FolderOpen } from "lucide-react";
 import { getSetting } from "@/lib/settings";
+import { UpcomingSchedule } from "./upcoming-schedule";
 
 export default async function DashboardPage() {
   const profile = await requireProfile();
@@ -24,6 +25,8 @@ export default async function DashboardPage() {
   return (
     <div>
       <PageHeader title={`Halo, ${profile.nama.split(" ")[0]} 👋`} description={greeting} />
+
+      {(profile.role === "owner" || profile.role === "social_media") && <UpcomingSchedule />}
 
       {driveFolderUrl && (
         <section className="mt-6">
