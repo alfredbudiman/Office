@@ -38,6 +38,7 @@ export function NewUserForm() {
         <select id="role" name="role" className="h-9 w-full rounded-md border px-2 text-sm">
           <option value="editor">editor (konten)</option>
           <option value="hrd">recruitment</option>
+          <option value="social_media">social media &amp; ads manager</option>
           <option value="owner">owner (semua akses)</option>
         </select>
         {state?.errors?.role && <p className="text-xs text-red-500">{state.errors.role}</p>}

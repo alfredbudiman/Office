@@ -4,7 +4,7 @@ export type NewUserInput = { nama: string; email: string; password: string; role
 export type ValidationResult = { ok: boolean; errors: Record<string, string> };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const ROLES: Role[] = ["owner", "editor", "hrd"];
+const ROLES: Role[] = ["owner", "editor", "hrd", "social_media"];
 
 export function validateNewUser(input: NewUserInput): ValidationResult {
   const errors: Record<string, string> = {};

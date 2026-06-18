@@ -11,6 +11,7 @@ describe("menuForRole", () => {
       "/dashboard",
       "/video",
       "/bank-konten",
+      "/jadwal",
       "/stok",
       "/rekap",
       "/recruitment",
@@ -19,6 +20,14 @@ describe("menuForRole", () => {
       "/pengaturan",
     ]);
     expect(sections("owner")).toEqual(["Konten", "Rekrutmen", undefined]);
+  });
+
+  it("social_media: jadwal + bank konten + absensi, TANPA recruitment/users/video", () => {
+    const h = hrefs("social_media");
+    expect(h).toEqual(["/dashboard", "/jadwal", "/bank-konten", "/absensi"]);
+    expect(h).not.toContain("/recruitment");
+    expect(h).not.toContain("/users");
+    expect(h).not.toContain("/video");
   });
 
   it("editor: hanya konten + absensi, TANPA recruitment", () => {
