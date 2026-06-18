@@ -12,6 +12,7 @@ import { ExternalLink, FileSpreadsheet, FolderOpen, CheckCircle2 } from "lucide-
 import { listPostedKeys } from "@/lib/post-schedule-data";
 import { contentKey } from "@/lib/post-schedule";
 import { PostedToggle } from "@/components/posted-toggle";
+import { ClippingButton } from "@/components/clipping-button";
 
 export const metadata = { title: "Bank Konten" };
 
@@ -53,6 +54,7 @@ function DriveLink({ link }: { link: string | null }) {
 export default async function BankKontenPage() {
   const profile = await requireRole("owner", "editor", "social_media");
   const canManage = profile.role === "owner" || profile.role === "social_media";
+  const isOwner = profile.role === "owner";
   const result = await getBankKonten();
   const postedSet = new Set(canManage ? await listPostedKeys() : []);
 
@@ -75,13 +77,13 @@ export default async function BankKontenPage() {
       {!result.ok ? (
         <NotConfigured reason={result.error} />
       ) : (
-        <BankKontenView groups={result.groups} canManage={canManage} postedSet={postedSet} />
+        <BankKontenView groups={result.groups} canManage={canManage} isOwner={isOwner} postedSet={postedSet} />
       )}
     </div>
   );
 }
 
-function BankKontenView({ groups, canManage, postedSet }: { groups: KontenGroup[]; canManage: boolean; postedSet: Set<string> }) {
+function BankKontenView({ groups, canManage, isOwner, postedSet }: { groups: KontenGroup[]; canManage: boolean; isOwner: boolean; postedSet: Set<string> }) {
   const s = summarize(groups);
 
   if (s.total === 0) {
@@ -115,7 +117,7 @@ function BankKontenView({ groups, canManage, postedSet }: { groups: KontenGroup[
         ) : (
           <ul className="grid gap-2 sm:grid-cols-2">
             {s.doneItems.map((item, i) => (
-              <DoneCard key={`${item.konten}-${i}`} item={item} />
+              <DoneCard key={`${item.konten}-${i}`} item={item} isOwner={isOwner} />
             ))}
           </ul>
         )}
@@ -159,9 +161,9 @@ function BankKontenView({ groups, canManage, postedSet }: { groups: KontenGroup[
   );
 }
 
-function DoneCard({ item }: { item: KontenItem }) {
-  const inner = (
-    <>
+function DoneCard({ item, isOwner }: { item: KontenItem; isOwner: boolean }) {
+  return (
+    <li className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 shadow-card">
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">
         <FolderOpen className="h-[18px] w-[18px]" />
       </span>
@@ -170,25 +172,13 @@ function DoneCard({ item }: { item: KontenItem }) {
         <p className="text-[11px] text-muted-foreground">{item.jenis}</p>
       </div>
       {item.link ? (
-        <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <a href={item.link} target="_blank" rel="noreferrer" aria-label="Buka Drive" className="shrink-0 text-muted-foreground transition-colors hover:text-brand">
+          <ExternalLink className="h-4 w-4" />
+        </a>
       ) : (
         <span className="shrink-0 text-[10px] text-muted-foreground/60">tanpa link</span>
       )}
-    </>
-  );
-
-  const className =
-    "flex items-center gap-3 rounded-xl border border-border bg-card p-3 shadow-card transition-shadow";
-
-  return (
-    <li>
-      {item.link ? (
-        <a href={item.link} target="_blank" rel="noreferrer" className={`${className} hover:shadow-pop`}>
-          {inner}
-        </a>
-      ) : (
-        <div className={className}>{inner}</div>
-      )}
+      {isOwner && <ClippingButton title={item.konten} link={item.link} />}
     </li>
   );
 }
