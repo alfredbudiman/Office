@@ -10,10 +10,12 @@
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
   --color-brand-muted: var(--brand-muted);
-  --font-sans: var(--font-dm-sans);
+  --font-sans: var(--font-poppins);
   --font-mono: var(--font-space-mono);
-  --font-display: var(--font-syne);
-  --font-heading: var(--font-syne);
+  --font-display: var(--font-poppins);
+  --font-heading: var(--font-poppins);
+  --color-pru: var(--pru);
+  --color-pru-foreground: var(--pru-foreground);
   --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.04), 0 2px 8px oklch(0 0 0 / 0.04);
   --shadow-card: 0 1px 0 oklch(0 0 0 / 0.02), 0 1px 3px oklch(0 0 0 / 0.06);
   --shadow-pop: 0 8px 30px oklch(0 0 0 / 0.10);
@@ -76,7 +78,10 @@
   /* accent = bright-green wash (hover, highlight) */
   --accent: #e7f4e0;
   --accent-foreground: #1d5128;
-  --destructive: #d92d20;
+  /* Pru Red — aksen sekunder (identitas logo Sprout) */
+  --pru: #ed1c24;
+  --pru-foreground: #ffffff;
+  --destructive: #ed1c24;
   --border: #e8e5d8;
   --input: #dcd8c9;
   --ring: #2d7d3a;
@@ -124,7 +129,8 @@
     pointer-events: none;
     background:
       radial-gradient(1100px 480px at 50% -16%, rgba(45, 125, 58, 0.05), transparent 62%),
-      radial-gradient(820px 420px at 100% 0%, rgba(245, 197, 24, 0.035), transparent 60%);
+      radial-gradient(820px 420px at 100% 0%, rgba(245, 197, 24, 0.035), transparent 60%),
+      radial-gradient(720px 400px at 2% 6%, rgba(237, 28, 36, 0.045), transparent 58%);
   }
   body::after {
     content: "";
@@ -135,11 +141,11 @@
     opacity: 0.03;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
-  /* Display: Syne — wordmark & headline */
+  /* Display: Poppins bold — judul & wordmark */
   .font-display {
     font-family: var(--font-display), system-ui, sans-serif;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
   }
   /* Angka metrik & label rapi-rata (tabular) */
   .tnum { font-variant-numeric: tabular-nums; }
