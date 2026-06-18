@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  LayoutDashboard, Clapperboard, Library, Boxes, BarChart3, Users, Clock, Settings, Folder, UserSearch, CalendarClock,
+  LayoutDashboard, Clapperboard, Library, Boxes, BarChart3, Users, Clock, Settings, Folder, UserSearch, CalendarClock, Wallet,
   type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
@@ -22,6 +22,7 @@ const ICONS: Record<string, LucideIcon> = {
   "/users": Users,
   "/absensi": Clock,
   "/pengaturan": Settings,
+  "/hutang": Wallet,
 };
 
 function SidebarContent({
