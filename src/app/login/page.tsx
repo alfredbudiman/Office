@@ -13,20 +13,20 @@ export default function LoginPage() {
   const [state, formAction, pending] = useActionState(login, null);
   return (
     <div className="bg-paper relative flex min-h-screen items-center justify-center overflow-hidden p-4">
-      {/* Blob organic warm */}
+      {/* Blob organik — hijau Sprout & gold tipis di atas putih */}
       <motion.div
         aria-hidden
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.2 }}
-        className="pointer-events-none absolute -top-24 -left-20 h-[420px] w-[420px] rounded-full bg-brand/15 blur-[120px] -z-10"
+        className="pointer-events-none absolute -top-24 -left-20 h-[420px] w-[420px] rounded-full bg-brand/12 blur-[120px] -z-10"
       />
       <motion.div
         aria-hidden
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.2, delay: 0.2 }}
-        className="pointer-events-none absolute -bottom-32 -right-16 h-[360px] w-[360px] rounded-full bg-[oklch(0.7_0.12_60/0.18)] blur-[110px] -z-10"
+        className="pointer-events-none absolute -bottom-32 -right-16 h-[360px] w-[360px] rounded-full bg-[#7ed957]/15 blur-[110px] -z-10"
       />
 
       <motion.div
@@ -50,7 +50,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="rounded-3xl border border-border/70 bg-card/85 p-7 shadow-card backdrop-blur-sm">
+        <div className="rounded-3xl border border-border bg-card p-7 shadow-pop">
           <h2 className="mb-5 font-display text-xl tracking-tight">
             Selamat datang kembali
           </h2>

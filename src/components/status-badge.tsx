@@ -1,14 +1,14 @@
 import { STATUS_LABEL, type VideoStatus } from "@/lib/video-workflow";
 
-// 3 nada: netral (dalam proses), amber (menunggu review owner), emerald (selesai/tayang).
+// Nada brand: netral (dalam proses) · gold (menunggu review owner) · hijau (selesai) · hijau solid (tayang).
 const TONE: Record<VideoStatus, string> = {
   draft_brief: "bg-muted text-muted-foreground",
   cut_to_cut: "bg-muted text-foreground/70",
-  review_cut: "bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300",
-  editing: "bg-brand-muted text-brand",
-  review_draft: "bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300",
-  final: "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300",
-  tayang: "bg-emerald-600 text-white dark:bg-emerald-500",
+  review_cut: "bg-[#fbf1c9] text-[#7a5e00]",
+  editing: "bg-brand-muted text-[#1d5128]",
+  review_draft: "bg-[#fbf1c9] text-[#7a5e00]",
+  final: "bg-[#dff3d3] text-[#1d5128]",
+  tayang: "bg-brand text-brand-foreground",
 };
 
 export function StatusBadge({ status, className = "" }: { status: VideoStatus; className?: string }) {
