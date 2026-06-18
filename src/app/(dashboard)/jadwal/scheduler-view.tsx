@@ -24,17 +24,18 @@ function prettyDate(ymd: string) { const [y, m, d] = ymd.split("-").map(Number);
 type BankOption = { title: string; link: string | null };
 
 export function SchedulerView({
-  rows, videoOptions, bankOptions, postedKeys, prep,
+  rows, videoOptions, bankOptions, postedKeys, prep, initialVideoId,
 }: {
   rows: ScheduleRow[];
   videoOptions: VideoOption[];
   bankOptions: BankOption[];
   postedKeys: string[];
   prep: ContentPrep[];
+  initialVideoId?: string;
 }) {
   const router = useRouter();
   const [view, setView] = useState<"calendar" | "checklist">("calendar");
-  const [formOpen, setFormOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(!!initialVideoId);
   const [openKey, setOpenKey] = useState<string | null>(null);
   const today = wibToday();
   const [cursor, setCursor] = useState(() => { const [y, m] = today.split("-").map(Number); return { y, m: m - 1 }; });
@@ -89,7 +90,7 @@ export function SchedulerView({
       </div>
 
       {formOpen && (
-        <ScheduleForm videoOptions={availVideos} bankOptions={availBank} defaultDate={selected} onClose={() => setFormOpen(false)} onDone={() => { setFormOpen(false); router.refresh(); }} />
+        <ScheduleForm videoOptions={availVideos} bankOptions={availBank} defaultDate={selected} initialVideoId={initialVideoId} onClose={() => setFormOpen(false)} onDone={() => { setFormOpen(false); router.refresh(); }} />
       )}
 
       {view === "calendar" ? (

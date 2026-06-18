@@ -18,18 +18,20 @@ const selCls =
   "h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 export function ScheduleForm({
-  videoOptions, bankOptions, defaultDate, onClose, onDone,
+  videoOptions, bankOptions, defaultDate, initialVideoId, onClose, onDone,
 }: {
   videoOptions: VideoOption[];
   bankOptions: BankOption[];
   defaultDate: string;
+  initialVideoId?: string;
   onClose: () => void;
   onDone: () => void;
 }) {
   const [state, action, pending] = useActionState(createSchedule, null);
-  const [source, setSource] = useState<"manual" | "video" | "bank_konten">("manual");
-  const [title, setTitle] = useState("");
-  const [driveUrl, setDriveUrl] = useState("");
+  const initialVideo = initialVideoId ? videoOptions.find((v) => v.id === initialVideoId) : undefined;
+  const [source, setSource] = useState<"manual" | "video" | "bank_konten">(initialVideo ? "video" : "manual");
+  const [title, setTitle] = useState(initialVideo?.judul ?? "");
+  const [driveUrl, setDriveUrl] = useState(initialVideo?.link_source ?? "");
   const [defTime, setDefTime] = useState("19:00");
   const [pf, setPf] = useState<PfState>(() =>
     Object.fromEntries(PLATFORMS.map((p) => [p, { on: false, date: defaultDate, time: "19:00" }])) as PfState,
@@ -78,7 +80,7 @@ export function ScheduleForm({
           {source === "video" && (
             <div className="space-y-1">
               <Label htmlFor="video_id">Pilih video</Label>
-              <select id="video_id" name="video_id" className={selCls} defaultValue="" onChange={(e) => pickVideo(e.target.value)}>
+              <select id="video_id" name="video_id" className={selCls} defaultValue={initialVideoId ?? ""} onChange={(e) => pickVideo(e.target.value)}>
                 <option value="" disabled>— pilih —</option>
                 {videoOptions.map((v) => <option key={v.id} value={v.id}>{v.judul}</option>)}
               </select>
