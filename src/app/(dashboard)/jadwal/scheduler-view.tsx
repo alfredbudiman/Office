@@ -21,7 +21,7 @@ function pad(n: number) { return String(n).padStart(2, "0"); }
 function timeWIB(iso: string) { return new Date(iso).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" }); }
 function prettyDate(ymd: string) { const [y, m, d] = ymd.split("-").map(Number); return `${d} ${MONTHS[m - 1]} ${y}`; }
 
-type BankOption = { title: string; link: string | null };
+type BankOption = { title: string; link: string | null; jenis: string };
 
 export function SchedulerView({
   rows, videoOptions, bankOptions, postedKeys, prep, initialVideoId,
