@@ -30,11 +30,18 @@ export function ScheduleForm({
   const [state, action, pending] = useActionState(createSchedule, null);
   const initialVideo = initialVideoId ? videoOptions.find((v) => v.id === initialVideoId) : undefined;
   const [source, setSource] = useState<"manual" | "video" | "bank_konten">(initialVideo ? "video" : bankOptions.length ? "bank_konten" : "manual");
-  // Bank Konten dikelompokkan per jenis (Shorts, Monolog, dll), index asli dipertahankan untuk pilih.
-  const bankByJenis = (() => {
-    const m = new Map<string, { idx: number; title: string }[]>();
-    bankOptions.forEach((b, i) => (m.get(b.jenis) ?? m.set(b.jenis, []).get(b.jenis)!).push({ idx: i, title: b.title }));
-    return [...m.entries()];
+  // Bank Konten: yang sudah ada link dikelompokkan per jenis di atas; yang belum ada link
+  // (belum beres) ditaruh satu grup di bawah. Index asli dipertahankan untuk memilih.
+  const bankGroups = (() => {
+    const ready = new Map<string, { idx: number; title: string }[]>();
+    const notReady: { idx: number; title: string }[] = [];
+    bankOptions.forEach((b, i) => {
+      if (b.link) (ready.get(b.jenis) ?? ready.set(b.jenis, []).get(b.jenis)!).push({ idx: i, title: b.title });
+      else notReady.push({ idx: i, title: `${b.jenis} · ${b.title}` });
+    });
+    const groups = [...ready.entries()].map(([label, items]) => ({ label, items }));
+    if (notReady.length) groups.push({ label: "⚠ Belum ada link (belum beres)", items: notReady });
+    return groups;
   })();
   const [title, setTitle] = useState(initialVideo?.judul ?? "");
   const [driveUrl, setDriveUrl] = useState(initialVideo?.link_source ?? "");
@@ -97,9 +104,9 @@ export function ScheduleForm({
               <Label>Pilih dari Bank Konten</Label>
               <select className={selCls} defaultValue="" onChange={(e) => pickBank(e.target.value)}>
                 <option value="" disabled>— pilih —</option>
-                {bankByJenis.map(([jenis, items]) => (
-                  <optgroup key={jenis} label={jenis}>
-                    {items.map((it) => <option key={it.idx} value={it.idx}>{it.title}</option>)}
+                {bankGroups.map((g) => (
+                  <optgroup key={g.label} label={g.label}>
+                    {g.items.map((it) => <option key={it.idx} value={it.idx}>{it.title}</option>)}
                   </optgroup>
                 ))}
               </select>

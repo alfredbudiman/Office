@@ -49,6 +49,29 @@ export async function createVideo(_prev: unknown, formData: FormData) {
   return { ok: true, errors: {}, id: data.id };
 }
 
+/** Buat tugas clipping (turunan) dari konten yang sudah jadi — mis. dari Bank Konten.
+ *  Link sumber dibawa sebagai link_source; editor di-assign nanti di modul Video. */
+export async function createClippingTask(title: string, link: string | null) {
+  const profile = await requireRole("owner");
+  const judul = `${title} — Clipping`.slice(0, 200);
+  const supabase = await createClient();
+  const { error } = await supabase.from("videos").insert({
+    judul,
+    tipe: "clipping",
+    tipe_custom: null,
+    status: initialStatus("clipping"),
+    editor_id: null,
+    parent_video_id: null,
+    link_source: link || null,
+    created_by: profile.id,
+  });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/video");
+  revalidatePath("/bank-konten");
+  revalidatePath("/dashboard");
+  return { ok: true };
+}
+
 export async function applyVideoAction(
   videoId: string,
   action: VideoAction,
