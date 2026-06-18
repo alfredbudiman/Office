@@ -1,4 +1,4 @@
-export type Role = "owner" | "editor" | "hrd";
+export type Role = "owner" | "editor" | "hrd" | "social_media";
 
 export type MenuItem = { label: string; href: string };
 // Grup menu di sidebar. `section` opsional — bila kosong, item tampil tanpa judul grup.
@@ -13,6 +13,7 @@ const MENUS: Record<Role, MenuGroup[]> = {
         { label: "Dashboard", href: "/dashboard" },
         { label: "Video", href: "/video" },
         { label: "Bank Konten", href: "/bank-konten" },
+        { label: "Jadwal Posting", href: "/jadwal" },
         { label: "Stok Konten", href: "/stok" },
         { label: "Rekap Kinerja", href: "/rekap" },
       ],
@@ -48,6 +49,20 @@ const MENUS: Record<Role, MenuGroup[]> = {
     {
       section: "Rekrutmen",
       items: [{ label: "Recruitment", href: "/recruitment" }],
+    },
+    {
+      items: [{ label: "Absensi", href: "/absensi" }],
+    },
+  ],
+  // Social Media & Ads Manager — jadwal posting + bank konten, tanpa rekrutmen/admin
+  social_media: [
+    {
+      section: "Konten",
+      items: [
+        { label: "Dashboard", href: "/dashboard" },
+        { label: "Jadwal Posting", href: "/jadwal" },
+        { label: "Bank Konten", href: "/bank-konten" },
+      ],
     },
     {
       items: [{ label: "Absensi", href: "/absensi" }],

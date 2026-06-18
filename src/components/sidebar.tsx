@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  LayoutDashboard, Clapperboard, Library, Boxes, BarChart3, Users, Clock, Settings, Folder, UserSearch,
+  LayoutDashboard, Clapperboard, Library, Boxes, BarChart3, Users, Clock, Settings, Folder, UserSearch, CalendarClock,
   type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
@@ -15,6 +15,7 @@ const ICONS: Record<string, LucideIcon> = {
   "/dashboard": LayoutDashboard,
   "/video": Clapperboard,
   "/bank-konten": Library,
+  "/jadwal": CalendarClock,
   "/stok": Boxes,
   "/rekap": BarChart3,
   "/recruitment": UserSearch,
