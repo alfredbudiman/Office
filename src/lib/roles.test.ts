@@ -18,8 +18,13 @@ describe("menuForRole", () => {
       "/users",
       "/absensi",
       "/pengaturan",
+      "/hutang",
     ]);
     expect(sections("owner")).toEqual(["Konten", "Rekrutmen", undefined]);
+  });
+
+  it("finance (Irene): HANYA rekapitulasi hutang", () => {
+    expect(hrefs("finance")).toEqual(["/hutang"]);
   });
 
   it("social_media: jadwal + bank konten + absensi, TANPA recruitment/users/video", () => {

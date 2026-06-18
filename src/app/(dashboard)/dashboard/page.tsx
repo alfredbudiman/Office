@@ -13,6 +13,8 @@ export default async function DashboardPage() {
   const profile = await requireProfile();
   // Role recruitment (Sabina) tidak melihat konten — arahkan ke halaman Recruitment.
   if (profile.role === "hrd") redirect("/recruitment");
+  // Finance (Irene) hanya rekap hutang.
+  if (profile.role === "finance") redirect("/hutang");
   const videos = await listVideos();
   const driveFolderUrl = await getSetting("drive_folder_url");
 

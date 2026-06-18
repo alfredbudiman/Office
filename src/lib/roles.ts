@@ -1,4 +1,4 @@
-export type Role = "owner" | "editor" | "hrd" | "social_media";
+export type Role = "owner" | "editor" | "hrd" | "social_media" | "finance";
 
 export type MenuItem = { label: string; href: string };
 // Grup menu di sidebar. `section` opsional — bila kosong, item tampil tanpa judul grup.
@@ -27,6 +27,7 @@ const MENUS: Record<Role, MenuGroup[]> = {
         { label: "Kelola User", href: "/users" },
         { label: "Absensi", href: "/absensi" },
         { label: "Pengaturan", href: "/pengaturan" },
+        { label: "Rekapitulasi Hutang", href: "/hutang" },
       ],
     },
   ],
@@ -52,6 +53,12 @@ const MENUS: Record<Role, MenuGroup[]> = {
     },
     {
       items: [{ label: "Absensi", href: "/absensi" }],
+    },
+  ],
+  // Finance (Irene) — HANYA rekapitulasi hutang, semua menu lain disembunyikan
+  finance: [
+    {
+      items: [{ label: "Rekapitulasi Hutang", href: "/hutang" }],
     },
   ],
   // Social Media & Ads Manager — jadwal posting + bank konten, tanpa rekrutmen/admin

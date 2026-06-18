@@ -39,6 +39,7 @@ export function NewUserForm() {
           <option value="editor">editor (konten)</option>
           <option value="hrd">recruitment</option>
           <option value="social_media">social media &amp; ads manager</option>
+          <option value="finance">finance (rekap hutang)</option>
           <option value="owner">owner (semua akses)</option>
         </select>
         {state?.errors?.role && <p className="text-xs text-red-500">{state.errors.role}</p>}
