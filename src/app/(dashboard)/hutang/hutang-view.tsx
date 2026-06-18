@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  rupiah, dayLabel, monthLabel, totalUnpaid,
+  rupiah, totalUnpaid,
   generateMondayLabText, generatePaText, generateLainnyaText, generateRekapText,
   DEFAULT_BOX_PRICE, type DebtPerson, type DebtCharge,
 } from "@/lib/debt";
@@ -19,6 +19,9 @@ import {
 function wibMonth() { return new Date(new Date().getTime() + 7 * 3600000).toISOString().slice(0, 7); }
 function wibDateStr() { return new Date(new Date().getTime() + 7 * 3600000).toISOString().slice(0, 10); }
 const selCls = "h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+const MON_SHORT = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+function shortDay(ymd: string) { const [, m, d] = ymd.split("-").map(Number); return `${d} ${MON_SHORT[m - 1]}`; }
+function shortMonth(ym: string) { const [y, m] = ym.split("-").map(Number); return `${MON_SHORT[m - 1]} '${String(y).slice(2)}`; }
 
 export function HutangView({ people, charges }: { people: DebtPerson[]; charges: DebtCharge[] }) {
   const router = useRouter();
@@ -58,8 +61,8 @@ export function HutangView({ people, charges }: { people: DebtPerson[]; charges:
         ))}
       </div>
 
-      {tab === "monday" && <MondayTab people={activePeople} charges={charges} name={name} pending={pending} run={run} />}
-      {tab === "pa" && <PaTab charges={charges} name={name} pending={pending} run={run} />}
+      {tab === "monday" && <MondayTab people={people} activePeople={activePeople} charges={charges} pending={pending} run={run} />}
+      {tab === "pa" && <PaTab people={people} charges={charges} pending={pending} run={run} />}
       {tab === "lainnya" && <LainnyaTab people={activePeople} charges={charges} name={name} pending={pending} run={run} />}
 
       {/* Output */}
@@ -161,20 +164,23 @@ function ChargeRow({ charge, name, pending, run, detail }: {
   );
 }
 
-function MondayTab({ people, charges, name, pending, run }: {
-  people: DebtPerson[]; charges: DebtCharge[]; name: Map<string, string>; pending: boolean;
+function MondayTab({ people, activePeople, charges, pending, run }: {
+  people: DebtPerson[]; activePeople: DebtPerson[]; charges: DebtCharge[]; pending: boolean;
   run: (fn: () => Promise<{ ok: boolean; error?: string }>, okMsg: string) => void;
 }) {
   const [date, setDate] = useState(wibDateStr());
   const [price, setPrice] = useState(String(DEFAULT_BOX_PRICE));
   const [pax, setPax] = useState<Record<string, string>>({});
   const rows = charges.filter((c) => c.category === "monday_lab");
-  const byDate = new Map<string, DebtCharge[]>();
-  for (const c of rows) (byDate.get(c.occurred_on) ?? byDate.set(c.occurred_on, []).get(c.occurred_on)!).push(c);
-  const dates = [...byDate.keys()].sort().reverse();
+  const dates = [...new Set(rows.map((c) => c.occurred_on))].sort();
+  const cellMap = new Map<string, DebtCharge>();
+  rows.forEach((c) => cellMap.set(`${c.person_id}|${c.occurred_on}`, c));
+  const withCharge = new Set(rows.map((c) => c.person_id));
+  const matrixPeople = people.filter((p) => p.active || withCharge.has(p.id));
+  const unpaidOf = (pid: string) => rows.filter((c) => c.person_id === pid && !c.paid).reduce((a, c) => a + c.amount, 0);
 
   function submit() {
-    const entries = people.map((p) => ({ person_id: p.id, pax: Number(pax[p.id] || 0) }));
+    const entries = activePeople.map((p) => ({ person_id: p.id, pax: Number(pax[p.id] || 0) }));
     run(() => addMondayLab(date, Number(price), JSON.stringify(entries)).then((r) => { if (r.ok) setPax({}); return r; }), "Acara ditambahkan");
   }
 
@@ -186,11 +192,11 @@ function MondayTab({ people, charges, name, pending, run }: {
           <div className="space-y-1"><Label>Tanggal</Label><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-auto" /></div>
           <div className="space-y-1"><Label>Harga / box</Label><Input type="number" min={0} value={price} onChange={(e) => setPrice(e.target.value)} className="w-28" /></div>
         </div>
-        {people.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">Tambahkan orang dulu di "Daftar orang".</p>
+        {activePeople.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">Tambahkan orang dulu di &quot;Daftar orang&quot;.</p>
         ) : (
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            {people.map((p) => (
+            {activePeople.map((p) => (
               <label key={p.id} className="flex items-center gap-2 rounded-lg border border-border px-2.5 py-1.5 text-sm">
                 <span className="flex-1">{p.name}</span>
                 <Input type="number" min={0} placeholder="pax" value={pax[p.id] ?? ""} onChange={(e) => setPax((s) => ({ ...s, [p.id]: e.target.value }))} className="w-20" />
@@ -198,81 +204,141 @@ function MondayTab({ people, charges, name, pending, run }: {
             ))}
           </div>
         )}
-        <Button size="sm" className="mt-3" disabled={pending || people.length === 0} onClick={submit}><Plus className="mr-1 h-3.5 w-3.5" /> Simpan acara</Button>
+        <Button size="sm" className="mt-3" disabled={pending || activePeople.length === 0} onClick={submit}><Plus className="mr-1 h-3.5 w-3.5" /> Simpan acara</Button>
       </div>
 
-      {dates.map((d) => {
-        const list = byDate.get(d)!;
-        const sub = list.filter((c) => !c.paid).reduce((a, c) => a + c.amount, 0);
-        return (
-          <div key={d} className="rounded-2xl border border-border bg-card shadow-card">
-            <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
-              <span className="text-sm font-semibold">Senin, {dayLabel(d)} <span className="font-normal text-muted-foreground">· {rupiah(list[0].unit_price)}/box</span></span>
-              <span className="tnum text-xs text-muted-foreground">belum lunas: {rupiah(sub)}</span>
-            </div>
-            <div className="divide-y divide-border/60 px-4">
-              {list.map((c) => <ChargeRow key={c.id} charge={c} name={name} pending={pending} run={run} detail={`${c.qty} box`} />)}
-            </div>
-          </div>
-        );
-      })}
-      {dates.length === 0 && <Empty>Belum ada acara Monday Lab.</Empty>}
+      {dates.length === 0 ? (
+        <Empty>Belum ada acara Monday Lab.</Empty>
+      ) : (
+        <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-card">
+          <table className="w-full border-collapse text-sm">
+            <thead className="bg-muted/40 text-xs text-muted-foreground">
+              <tr>
+                <th className="sticky left-0 z-10 bg-muted/40 px-3 py-2 text-left">Nama</th>
+                {dates.map((d) => <th key={d} className="whitespace-nowrap px-2 py-2 text-center">{shortDay(d)}</th>)}
+                <th className="px-3 py-2 text-right">Belum lunas</th>
+              </tr>
+            </thead>
+            <tbody>
+              {matrixPeople.map((p) => (
+                <tr key={p.id} className="border-t border-border">
+                  <td className="sticky left-0 z-10 whitespace-nowrap bg-card px-3 py-1.5 font-medium">{p.name}</td>
+                  {dates.map((d) => {
+                    const c = cellMap.get(`${p.id}|${d}`);
+                    return <td key={d} className="px-2 py-1.5 text-center">{c ? <MondayCell charge={c} pending={pending} run={run} /> : <span className="text-muted-foreground/30">—</span>}</td>;
+                  })}
+                  <td className="tnum px-3 py-1.5 text-right font-medium">{rupiah(unpaidOf(p.id))}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
 
-function PaTab({ charges, name, pending, run }: {
-  charges: DebtCharge[]; name: Map<string, string>; pending: boolean;
+function MondayCell({ charge, pending, run }: {
+  charge: DebtCharge; pending: boolean;
+  run: (fn: () => Promise<{ ok: boolean; error?: string }>, okMsg: string) => void;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1">
+      <button
+        title={rupiah(charge.amount)}
+        disabled={pending}
+        onClick={() => run(() => togglePaid(charge.id, !charge.paid), charge.paid ? "Dibuka" : "Lunas")}
+        className={`tnum rounded-md px-2 py-0.5 text-xs font-medium ${charge.paid ? "bg-[#dff3d3] text-[#1d5128]" : "bg-muted hover:bg-accent"}`}
+      >
+        {charge.qty}{charge.paid ? " ✓" : ""}
+      </button>
+      <button aria-label="Hapus" disabled={pending} onClick={() => run(() => deleteCharge(charge.id), "Dihapus")} className="text-muted-foreground/40 hover:text-destructive"><X className="h-3 w-3" /></button>
+    </span>
+  );
+}
+
+function PaTab({ people, charges, pending, run }: {
+  people: DebtPerson[]; charges: DebtCharge[]; pending: boolean;
   run: (fn: () => Promise<{ ok: boolean; error?: string }>, okMsg: string) => void;
 }) {
   const router = useRouter();
-  const [month, setMonth] = useState(wibMonth());
   const ensured = useRef<Set<string>>(new Set());
-  const monthRows = charges.filter((c) => c.category === "pa" && c.occurred_on.slice(0, 7) === month);
+  const [addMonth, setAddMonth] = useState(wibMonth());
+  const rows = charges.filter((c) => c.category === "pa");
+  const monthSet = new Set(rows.map((c) => c.occurred_on.slice(0, 7)));
+  monthSet.add(wibMonth());
+  const months = [...monthSet].sort();
+  const cellMap = new Map<string, DebtCharge>();
+  rows.forEach((c) => cellMap.set(`${c.person_id}|${c.occurred_on.slice(0, 7)}`, c));
+  const withCharge = new Set(rows.map((c) => c.person_id));
+  const matrixPeople = people.filter((p) => p.active || withCharge.has(p.id));
+  const unpaidOf = (pid: string) => rows.filter((c) => c.person_id === pid && !c.paid).reduce((a, c) => a + c.amount, 0);
 
   useEffect(() => {
-    if (ensured.current.has(month)) return;
-    ensured.current.add(month);
-    if (monthRows.length === 0) {
-      ensurePaEntries(month).then((r) => { if (r.ok && (r.added ?? 0) > 0) router.refresh(); });
+    const m = wibMonth();
+    if (ensured.current.has(m)) return;
+    ensured.current.add(m);
+    if (!rows.some((c) => c.occurred_on.slice(0, 7) === m)) {
+      ensurePaEntries(m).then((r) => { if (r.ok && (r.added ?? 0) > 0) router.refresh(); });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [month]);
-
-  const sub = monthRows.filter((c) => !c.paid).reduce((a, c) => a + c.amount, 0);
+  }, []);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-border bg-card p-4 shadow-card">
-        <div className="space-y-1"><Label>Bulan</Label><Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="w-auto" /></div>
-        <span className="tnum text-sm text-muted-foreground">belum lunas: <span className="font-semibold text-foreground">{rupiah(sub)}</span></span>
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-end gap-2 rounded-2xl border border-border bg-card p-4 shadow-card">
+        <div className="space-y-1"><Label>Buka / tambah bulan</Label><Input type="month" value={addMonth} onChange={(e) => setAddMonth(e.target.value)} className="w-auto" /></div>
+        <Button size="sm" variant="secondary" disabled={pending} onClick={() => run(() => ensurePaEntries(addMonth), "Bulan disiapkan")}>Tambah bulan</Button>
       </div>
-      <div className="rounded-2xl border border-border bg-card shadow-card">
-        <div className="border-b border-border bg-muted/40 px-4 py-2.5 text-sm font-semibold">PA — {monthLabel(month + "-01")}</div>
-        <div className="divide-y divide-border/60 px-4">
-          {monthRows.map((c) => <PaRow key={c.id} charge={c} name={name} pending={pending} run={run} />)}
-          {monthRows.length === 0 && <p className="py-4 text-center text-sm text-muted-foreground">Belum ada data PA bulan ini (otomatis muncul bila ada orang aktif).</p>}
+      {matrixPeople.length === 0 ? (
+        <Empty>Belum ada orang aktif. Tambahkan di &quot;Daftar orang&quot;.</Empty>
+      ) : (
+        <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-card">
+          <table className="w-full border-collapse text-sm">
+            <thead className="bg-muted/40 text-xs text-muted-foreground">
+              <tr>
+                <th className="sticky left-0 z-10 bg-muted/40 px-3 py-2 text-left">Nama</th>
+                {months.map((m) => <th key={m} className="whitespace-nowrap px-2 py-2 text-center">{shortMonth(m)}</th>)}
+                <th className="px-3 py-2 text-right">Belum lunas</th>
+              </tr>
+            </thead>
+            <tbody>
+              {matrixPeople.map((p) => (
+                <tr key={p.id} className="border-t border-border">
+                  <td className="sticky left-0 z-10 whitespace-nowrap bg-card px-3 py-1.5 font-medium">{p.name}</td>
+                  {months.map((m) => {
+                    const c = cellMap.get(`${p.id}|${m}`);
+                    return <td key={m} className="px-2 py-1.5 text-center">{c ? <PaCell charge={c} pending={pending} run={run} /> : <span className="text-muted-foreground/30">—</span>}</td>;
+                  })}
+                  <td className="tnum px-3 py-1.5 text-right font-medium">{rupiah(unpaidOf(p.id))}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
-function PaRow({ charge, name, pending, run }: {
-  charge: DebtCharge; name: Map<string, string>; pending: boolean;
+function PaCell({ charge, pending, run }: {
+  charge: DebtCharge; pending: boolean;
   run: (fn: () => Promise<{ ok: boolean; error?: string }>, okMsg: string) => void;
 }) {
   const [amt, setAmt] = useState(String(charge.amount));
-  const dirty = Number(amt) !== charge.amount;
+  useEffect(() => { setAmt(String(charge.amount)); }, [charge.amount]);
+  function saveIfDirty() { if (Number(amt) !== charge.amount) run(() => updateChargeAmount(charge.id, Number(amt)), "Tersimpan"); }
   return (
-    <div className="flex flex-wrap items-center gap-2 py-2 text-sm">
-      <span className="min-w-[6rem] flex-1 font-medium">{name.get(charge.person_id) ?? "?"}</span>
-      <Input type="number" min={0} value={amt} onChange={(e) => setAmt(e.target.value)} className="w-28" />
-      {dirty && <Button size="xs" disabled={pending} onClick={() => run(() => updateChargeAmount(charge.id, Number(amt)), "Tersimpan")}>Simpan</Button>}
-      <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${charge.paid ? "bg-[#dff3d3] text-[#1d5128]" : "bg-muted text-muted-foreground"}`}>{charge.paid ? "Lunas" : "Belum"}</span>
-      <Button size="icon-xs" variant={charge.paid ? "ghost" : "default"} aria-label="Tandai lunas" disabled={pending} onClick={() => run(() => togglePaid(charge.id, !charge.paid), charge.paid ? "Dibuka" : "Ditandai lunas")}><Check className="h-3.5 w-3.5" /></Button>
-      <Button size="icon-xs" variant="ghost" aria-label="Hapus" disabled={pending} onClick={() => run(() => deleteCharge(charge.id), "Dihapus")} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
-    </div>
+    <span className="inline-flex items-center gap-1">
+      <input
+        type="number" min={0} value={amt} onChange={(e) => setAmt(e.target.value)} onBlur={saveIfDirty}
+        className={`tnum w-20 rounded-md border px-1 py-0.5 text-right text-xs outline-none ${charge.paid ? "border-[#bfe3ad] bg-[#dff3d3] text-[#1d5128]" : "border-input bg-transparent"}`}
+      />
+      <button aria-label="Tandai lunas" disabled={pending} onClick={() => run(() => togglePaid(charge.id, !charge.paid), charge.paid ? "Dibuka" : "Lunas")}
+        className={`flex h-5 w-5 items-center justify-center rounded border ${charge.paid ? "border-brand bg-brand text-brand-foreground" : "border-border hover:bg-accent"}`}>
+        {charge.paid && <Check className="h-3 w-3" strokeWidth={3} />}
+      </button>
+    </span>
   );
 }
 
