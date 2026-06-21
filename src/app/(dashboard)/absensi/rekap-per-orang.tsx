@@ -64,6 +64,7 @@ export function RekapPerOrang({ data }: { data: RekapOrang[] }) {
               <button
                 type="button"
                 onClick={() => toggle(o.id)}
+                aria-expanded={open}
                 className="flex w-full items-center justify-between gap-2 p-3 text-left"
               >
                 <span className="flex items-center gap-1.5 text-sm font-medium">
@@ -105,7 +106,19 @@ export function RekapPerOrang({ data }: { data: RekapOrang[] }) {
 function FragmentRow({ o, open, onToggle }: { o: RekapOrang; open: boolean; onToggle: () => void }) {
   return (
     <>
-      <tr className="cursor-pointer border-t border-border hover:bg-accent/40" onClick={onToggle}>
+      <tr
+        className="cursor-pointer border-t border-border hover:bg-accent/40"
+        onClick={onToggle}
+        tabIndex={0}
+        role="button"
+        aria-expanded={open}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            if (e.key === " ") e.preventDefault();
+            onToggle();
+          }
+        }}
+      >
         <td className="px-4 py-2.5">
           <span className="flex items-center gap-1.5">
             {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
