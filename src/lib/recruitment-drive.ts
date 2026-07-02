@@ -51,8 +51,11 @@ async function downloadJson(fileId: string): Promise<{ ok: true; data: HrDump } 
   }
 }
 
-/** Ambil file JSON terbaru di folder (fallback ke file asli bila listing tak tersedia). */
+/** Ambil file JSON terbaru di folder (fallback ke file asli bila listing tak tersedia).
+ *  viaListing=true berarti Drive API (project pemilik key) benar-benar dipakai. */
 export async function fetchHrDatabase(folderId: string = DEFAULT_DRIVE_FOLDER_ID) {
-  const fileId = (await latestFileInFolder(folderId)) ?? FALLBACK_FILE_ID;
-  return downloadJson(fileId);
+  const listed = await latestFileInFolder(folderId);
+  const fileId = listed ?? FALLBACK_FILE_ID;
+  const r = await downloadJson(fileId);
+  return r.ok ? { ...r, viaListing: !!listed, fileId } : r;
 }

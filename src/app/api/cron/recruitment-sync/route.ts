@@ -30,5 +30,5 @@ export async function GET(req: Request) {
     await admin.from("settings").upsert({ key: "recruitment_data_date", value: fetched.data.exported, updated_at: now, updated_by: uid }, { onConflict: "key" });
   }
 
-  return NextResponse.json({ ...res, exported: fetched.data.exported });
+  return NextResponse.json({ ...res, exported: fetched.data.exported, viaListing: fetched.viaListing, fileId: fetched.fileId });
 }
