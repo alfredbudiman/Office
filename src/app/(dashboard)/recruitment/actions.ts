@@ -1,9 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireProfile } from "@/lib/auth";
+import { requireProfile, requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { setSetting } from "@/lib/settings";
+import { setSetting, getSetting } from "@/lib/settings";
+import { fetchHrDatabase, DEFAULT_DRIVE_FILE_ID } from "@/lib/recruitment-drive";
 import {
   stageIndex,
   stageLabel,
@@ -440,4 +441,20 @@ export async function importMerge(
   }
   revalidatePath("/recruitment");
   return { ok: true, added, updated };
+}
+
+// Sync dari Google Drive HR (Cowork): tarik JSON publik lalu import-merge (non-destruktif).
+export async function syncFromDrive(): Promise<{ ok: boolean; added?: number; updated?: number; exported?: string | null; error?: string }> {
+  const profile = await requireRole("owner", "hrd");
+  const fileId = (await getSetting("recruitment_drive_file_id")) || DEFAULT_DRIVE_FILE_ID;
+  const fetched = await fetchHrDatabase(fileId);
+  if (!fetched.ok) return { ok: false, error: fetched.error };
+
+  const res = await importMerge(fetched.data.cands);
+  if (!res.ok) return { ok: false, error: res.error };
+
+  await setSetting("recruitment_last_sync", new Date().toISOString(), profile.id);
+  if (fetched.data.exported) await setSetting("recruitment_data_date", fetched.data.exported, profile.id);
+  revalidatePath("/recruitment");
+  return { ok: true, added: res.added, updated: res.updated, exported: fetched.data.exported };
 }
