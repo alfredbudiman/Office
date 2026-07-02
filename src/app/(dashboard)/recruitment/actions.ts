@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireProfile, requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { setSetting, getSetting } from "@/lib/settings";
-import { fetchHrDatabase, DEFAULT_DRIVE_FILE_ID } from "@/lib/recruitment-drive";
+import { fetchHrDatabase, DEFAULT_DRIVE_FOLDER_ID } from "@/lib/recruitment-drive";
 import { importMergeCore } from "@/lib/recruitment-merge";
 import {
   stageIndex,
@@ -382,8 +382,8 @@ export async function importMerge(
 // Sync dari Google Drive HR (Cowork): tarik JSON publik lalu import-merge (non-destruktif).
 export async function syncFromDrive(): Promise<{ ok: boolean; added?: number; updated?: number; exported?: string | null; error?: string }> {
   const profile = await requireRole("owner", "hrd");
-  const fileId = (await getSetting("recruitment_drive_file_id")) || DEFAULT_DRIVE_FILE_ID;
-  const fetched = await fetchHrDatabase(fileId);
+  const folderId = (await getSetting("recruitment_drive_folder_id")) || DEFAULT_DRIVE_FOLDER_ID;
+  const fetched = await fetchHrDatabase(folderId);
   if (!fetched.ok) return { ok: false, error: fetched.error };
 
   const res = await importMerge(fetched.data.cands);
