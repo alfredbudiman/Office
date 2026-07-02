@@ -1,7 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login"];
+// /api/cron/* dipicu Vercel Cron (tanpa sesi login) → jangan di-redirect ke /login.
+// Endpoint cron mengamankan diri sendiri via CRON_SECRET.
+const PUBLIC_PATHS = ["/login", "/api/cron"];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
