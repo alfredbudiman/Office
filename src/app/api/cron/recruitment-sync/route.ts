@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { fetchHrDatabase, DEFAULT_DRIVE_FILE_ID } from "@/lib/recruitment-drive";
+import { fetchHrDatabase, DEFAULT_DRIVE_FOLDER_ID } from "@/lib/recruitment-drive";
 import { importMergeCore } from "@/lib/recruitment-merge";
 
 // Auto-sync recruitment dari Google Drive HR. Dipicu Vercel Cron (jadwal di vercel.json).
@@ -13,10 +13,10 @@ export async function GET(req: Request) {
 
   const admin = createAdminClient();
 
-  const { data: setting } = await admin.from("settings").select("value").eq("key", "recruitment_drive_file_id").maybeSingle();
-  const fileId = (setting as { value?: string } | null)?.value || DEFAULT_DRIVE_FILE_ID;
+  const { data: setting } = await admin.from("settings").select("value").eq("key", "recruitment_drive_folder_id").maybeSingle();
+  const folderId = (setting as { value?: string } | null)?.value || DEFAULT_DRIVE_FOLDER_ID;
 
-  const fetched = await fetchHrDatabase(fileId);
+  const fetched = await fetchHrDatabase(folderId);
   if (!fetched.ok) return NextResponse.json({ ok: false, error: fetched.error }, { status: 502 });
 
   const res = await importMergeCore(admin, fetched.data.cands);
