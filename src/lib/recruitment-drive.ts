@@ -9,10 +9,10 @@ const FALLBACK_FILE_ID = "1Bwya6IYsKDLcysN2KBK4cH6EIOWAugL8";
 
 export type HrDump = { exported: string | null; cands: Record<string, unknown>[] };
 
-/** File JSON termodifikasi terakhir di folder (via Drive API + API key). null bila tak bisa. */
-async function latestFileInFolder(folderId: string): Promise<string | null> {
+/** File JSON termodifikasi terakhir di folder (via Drive API + API key). */
+async function latestFileInFolder(folderId: string): Promise<{ id: string | null; err: string | null }> {
   const key = process.env.GOOGLE_SHEETS_API_KEY;
-  if (!key) return null;
+  if (!key) return { id: null, err: "GOOGLE_SHEETS_API_KEY tidak ada di env" };
   const params = new URLSearchParams({
     q: `'${folderId}' in parents and trashed = false and mimeType = 'application/json'`,
     orderBy: "modifiedTime desc",
@@ -22,11 +22,14 @@ async function latestFileInFolder(folderId: string): Promise<string | null> {
   });
   try {
     const res = await fetch(`https://www.googleapis.com/drive/v3/files?${params.toString()}`, { cache: "no-store" });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const t = await res.text();
+      return { id: null, err: `HTTP ${res.status}: ${t.replace(/\s+/g, " ").slice(0, 280)}` };
+    }
     const j = (await res.json()) as { files?: { id: string }[] };
-    return j.files?.[0]?.id ?? null;
-  } catch {
-    return null;
+    return { id: j.files?.[0]?.id ?? null, err: j.files?.length ? null : "folder kosong / tak terlihat oleh key" };
+  } catch (e) {
+    return { id: null, err: e instanceof Error ? e.message : "fetch error" };
   }
 }
 
@@ -54,8 +57,8 @@ async function downloadJson(fileId: string): Promise<{ ok: true; data: HrDump } 
 /** Ambil file JSON terbaru di folder (fallback ke file asli bila listing tak tersedia).
  *  viaListing=true berarti Drive API (project pemilik key) benar-benar dipakai. */
 export async function fetchHrDatabase(folderId: string = DEFAULT_DRIVE_FOLDER_ID) {
-  const listed = await latestFileInFolder(folderId);
+  const { id: listed, err: listErr } = await latestFileInFolder(folderId);
   const fileId = listed ?? FALLBACK_FILE_ID;
   const r = await downloadJson(fileId);
-  return r.ok ? { ...r, viaListing: !!listed, fileId } : r;
+  return r.ok ? { ...r, viaListing: !!listed, fileId, listErr } : r;
 }
