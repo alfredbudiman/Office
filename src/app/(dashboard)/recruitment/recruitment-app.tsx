@@ -1,8 +1,9 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { UserPlus, Settings, Download, Upload, FileDown, Send } from "lucide-react";
+import { UserPlus, Settings, Download, Upload, FileDown, Send, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui-kit";
@@ -22,7 +23,7 @@ import { CandidateTable } from "./candidate-table";
 import { DashboardView } from "./dashboard-view";
 import { InterviewView } from "./interview-view";
 import { CandidateModal } from "./candidate-modal";
-import { createCandidate, updateRecruitmentSettings, importMerge } from "./actions";
+import { createCandidate, updateRecruitmentSettings, importMerge, syncFromDrive } from "./actions";
 import { exportJson, exportCsv, exportAgentsJson } from "./export";
 
 type Tab = "kanban" | "table" | "dash" | "wawancara";
@@ -37,11 +38,17 @@ export function RecruitmentApp({
   candidates,
   followUpDays,
   staleDays,
+  driveDataDate,
+  driveLastSync,
 }: {
   candidates: Candidate[];
   followUpDays: number;
   staleDays: number;
+  driveDataDate?: string | null;
+  driveLastSync?: string | null;
 }) {
+  const router = useRouter();
+  const [syncing, startSync] = useTransition();
   const [tab, setTab] = useState<Tab>("kanban");
   const [jalur, setJalur] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
@@ -83,9 +90,25 @@ export function RecruitmentApp({
     reader.readAsText(file);
   }
 
+  function doSync() {
+    startSync(async () => {
+      const res = await syncFromDrive();
+      if (!res.ok) { toast.error(res.error ?? "Gagal sync."); return; }
+      toast.success(`Sync Drive: ${res.added ?? 0} baru, ${res.updated ?? 0} dilengkapi${res.exported ? ` (data HR per ${res.exported})` : ""}.`);
+      router.refresh();
+    });
+  }
+
+  const syncInfo = driveDataDate
+    ? `Data HR per ${driveDataDate}${driveLastSync ? ` · sync ${new Date(driveLastSync).toLocaleString("id-ID", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" })}` : ""}`
+    : "Belum pernah sync dari Drive";
+
   return (
     <div>
       <PageHeader title="Recruitment" description="Pipeline rekrutmen Sproutlab — Sabina.">
+        <Button size="sm" variant="outline" onClick={doSync} disabled={syncing}>
+          <RefreshCw className={syncing ? "animate-spin" : ""} /> {syncing ? "Sync…" : "Sync Drive"}
+        </Button>
         <Button size="sm" onClick={() => setShowAdd(true)}>
           <UserPlus /> Tambah Kandidat
         </Button>
@@ -93,6 +116,7 @@ export function RecruitmentApp({
           <Settings /> Pengaturan
         </Button>
       </PageHeader>
+      <p className="-mt-3 mb-4 text-xs text-muted-foreground">{syncInfo}</p>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="flex gap-1 rounded-lg border border-border/70 bg-card p-1 shadow-card">

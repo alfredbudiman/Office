@@ -19,12 +19,16 @@ export default async function RecruitmentPage() {
 
   const followUpDays = parseInt((await getSetting("recruitment_follow_up_days")) ?? "3") || 3;
   const staleDays = parseInt((await getSetting("recruitment_stale_days")) ?? "7") || 7;
+  const driveDataDate = await getSetting("recruitment_data_date");
+  const driveLastSync = await getSetting("recruitment_last_sync");
 
   return (
     <RecruitmentApp
       candidates={candidates}
       followUpDays={followUpDays}
       staleDays={staleDays}
+      driveDataDate={driveDataDate}
+      driveLastSync={driveLastSync}
     />
   );
 }
