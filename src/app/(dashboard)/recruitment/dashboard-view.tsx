@@ -60,15 +60,27 @@ function MilestoneRow({ c }: { c: Candidate }) {
   const leadN =
     c.joinDate && c.msFirstClosing ? daysBetween(c.joinDate, c.msFirstClosing) : NaN;
   const lead = Number.isNaN(leadN) ? "–" : `${leadN} hari`;
-  const dateInput = (field: string, val: string) => (
-    <input
-      type="date"
-      defaultValue={val}
-      disabled={pending}
-      onChange={(e) => save(field, e.target.value)}
-      className="rounded-md border border-border/70 bg-background px-2 py-1 text-xs text-foreground disabled:opacity-50"
-    />
-  );
+  const dateInput = (field: string, val: string) => {
+    const labelText =
+      (
+        {
+          ms_first_office: "Pertama ke Kantor",
+          join_date: "Join / Kontrak",
+          ms_aaji: "Lisensi AAJI",
+          ms_first_closing: "Closing Pertama",
+        } as Record<string, string>
+      )[field] ?? field;
+    return (
+      <input
+        type="date"
+        defaultValue={val}
+        disabled={pending}
+        onChange={(e) => save(field, e.target.value)}
+        aria-label={`${c.name} — ${labelText}`}
+        className="rounded-md border border-border/70 bg-background px-2 py-1 text-xs text-foreground disabled:opacity-50"
+      />
+    );
+  };
   return (
     <tr className="border-t border-border/60">
       <td className="py-2 pr-3">
@@ -245,7 +257,12 @@ export function DashboardView({ candidates }: { candidates: Candidate[] }) {
             </thead>
             <tbody>
               {milestoneRows.length ? (
-                milestoneRows.map((c) => <MilestoneRow key={c.id} c={c} />)
+                milestoneRows.map((c) => (
+                  <MilestoneRow
+                    key={`${c.id}:${c.msFirstOffice}:${c.joinDate}:${c.msAAJI}:${c.msFirstClosing}`}
+                    c={c}
+                  />
+                ))
               ) : (
                 <tr>
                   <td colSpan={6} className="py-4 text-sm text-muted-foreground">
