@@ -198,6 +198,36 @@ export async function updateCandidate(id: string, fields: Record<string, string>
   return { ok: true };
 }
 
+const MS_COLS = new Set(["ms_first_office", "ms_aaji", "ms_first_closing", "join_date"]);
+const MS_LABEL: Record<string, string> = {
+  ms_first_office: "Pertama ke Kantor",
+  ms_aaji: "Lisensi AAJI",
+  ms_first_closing: "Closing Pertama",
+  join_date: "Join / Kontrak",
+};
+
+export async function updateMilestone(
+  id: string,
+  field: string,
+  value: string,
+): Promise<Result> {
+  await requireRole("owner", "hrd");
+  if (!MS_COLS.has(field)) return { ok: false, error: "Kolom tidak valid." };
+  if (value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) return { ok: false, error: "Format tanggal salah." };
+  const row = await getRow(id);
+  if (!row) return { ok: false, error: "Kandidat tidak ditemukan." };
+  const patch: Record<string, unknown> = {
+    [field]: value || null,
+    last_updated: jakartaToday(),
+    history: withHistory(row.history, `Milestone: ${MS_LABEL[field]} = ${value || "-"}`),
+  };
+  const supabase = await createClient();
+  const { error } = await supabase.from(TABLE).update(patch).eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/recruitment");
+  return { ok: true };
+}
+
 export async function moveStage(id: string, toStage: Stage): Promise<Result> {
   await requireProfile();
   const row = await getRow(id);
