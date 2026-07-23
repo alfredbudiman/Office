@@ -6,6 +6,7 @@ export type Stage =
   | "screening"
   | "followup"
   | "interview_hr"
+  | "interview_hr2"
   | "interview_alfred"
   | "onboarding"
   | "agent";
@@ -17,6 +18,7 @@ export const STAGES: { k: Stage; l: string }[] = [
   { k: "screening", l: "Screening CV & Profil" },
   { k: "followup", l: "Follow Up & Pendekatan" },
   { k: "interview_hr", l: "Interview HR" },
+  { k: "interview_hr2", l: "Interview HR 2" },
   { k: "interview_alfred", l: "Interview Pak Alfred" },
   { k: "onboarding", l: "Onboarding" },
   { k: "agent", l: "Agent Aktif" },
@@ -296,4 +298,104 @@ export function bestSource(cands: Candidate[]): string {
     }
   });
   return best;
+}
+
+// ---- Journey / Weekly / Milestone (port dari prototipe HTML) ----
+
+// Senin dari minggu tanggal, UTC-safe (mirip addDays: pakai UTC agar tak geser TZ).
+export function mondayOf(dateStr: string): string {
+  const ds = (dateStr || "").slice(0, 10);
+  if (!ds) return "";
+  const d = new Date(ds + "T00:00:00Z");
+  if (Number.isNaN(d.getTime())) return "";
+  const wd = (d.getUTCDay() + 6) % 7; // 0 = Senin
+  d.setUTCDate(d.getUTCDate() - wd);
+  return d.toISOString().slice(0, 10);
+}
+
+export function weekLabel(mondayStr: string): string {
+  if (!mondayStr) return "";
+  return new Date(mondayStr + "T00:00:00Z").toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    timeZone: "UTC",
+  });
+}
+
+// Tanggal "datang ke kantor": msFirstOffice → joinDate → (stageSince/interviewAt bila ≥ onboarding).
+export function officeDate(c: Candidate): string {
+  const io = stageIndex("onboarding");
+  const d = (s: string) => (s || "").slice(0, 10);
+  return (
+    d(c.msFirstOffice) ||
+    d(c.joinDate) ||
+    ((c.maxReached || 1) >= io ? d(c.stageSince) || d(c.interviewAt) : "")
+  );
+}
+
+const JOURNEY_STAGES: Stage[] = [
+  "screening",
+  "interview_hr",
+  "interview_hr2",
+  "interview_alfred",
+  "onboarding",
+  "agent",
+];
+
+export function journeyFunnel(
+  cands: Candidate[],
+): { stage: Stage; label: string; count: number; pctTop: number; pctPrev: number; width: number }[] {
+  const idxs = JOURNEY_STAGES.map((k) => stageIndex(k));
+  const counts = idxs.map((i) => cands.filter((c) => (c.maxReached || 1) >= i).length);
+  const top = counts[0] || 1;
+  return JOURNEY_STAGES.map((k, i) => {
+    const count = counts[i];
+    const pctTop = Math.round((count / top) * 100);
+    const pctPrev = i === 0 ? 100 : counts[i - 1] ? Math.round((count / counts[i - 1]) * 100) : 0;
+    const width = Math.max(5, Math.round((count / top) * 100));
+    return { stage: k, label: stageLabel(k), count, pctTop, pctPrev, width };
+  });
+}
+
+export function journeySummary(cands: Candidate[]): {
+  total: number;
+  aktif: number;
+  diundang: number;
+  office: number;
+  showRate: number;
+  agent: number;
+  convAll: number;
+} {
+  const reached = (i: number) => cands.filter((c) => (c.maxReached || 1) >= i).length;
+  const total = reached(stageIndex("screening"));
+  const diundang = reached(stageIndex("interview_alfred"));
+  const office = reached(stageIndex("onboarding"));
+  const agent = reached(stageIndex("agent"));
+  const aktif = cands.filter((c) => c.outcome === "active").length;
+  const showRate = diundang ? Math.round((office / diundang) * 100) : 0;
+  const convAll = total ? Math.round((agent / total) * 100) : 0;
+  return { total, aktif, diundang, office, showRate, agent, convAll };
+}
+
+export function weeklyTrend(
+  cands: Candidate[],
+): { key: string; label: string; masuk: number; interview: number; office: number }[] {
+  const weeks: Record<string, { masuk: number; interview: number; office: number }> = {};
+  const bump = (m: string, key: "masuk" | "interview" | "office") => {
+    if (!m) return;
+    weeks[m] = weeks[m] || { masuk: 0, interview: 0, office: 0 };
+    weeks[m][key]++;
+  };
+  cands.forEach((c) => bump(mondayOf(c.dateIn), "masuk"));
+  cands.forEach((c) => {
+    if (c.interviewAt) bump(mondayOf(c.interviewAt), "interview");
+  });
+  cands.forEach((c) => {
+    const od = officeDate(c);
+    if (od) bump(mondayOf(od), "office");
+  });
+  return Object.keys(weeks)
+    .sort()
+    .slice(-8)
+    .map((key) => ({ key, label: weekLabel(key), ...weeks[key] }));
 }
