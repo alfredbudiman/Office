@@ -24,7 +24,8 @@ const cand = (over: Partial<Candidate> = {}): Candidate => ({
   stageSince: "2026-06-09", lastUpdated: "2026-06-09", interest: "", followNote: "",
   lastContact: "", nextFollowUp: "", interviewAt: "", interviewDone: false, scoreHR: "",
   noteHR: "", recHR: "", noteAlfred: "", docs: {}, docLink: "", joinDate: "",
-  contractStatus: "", contractLink: "", agentCode: "", agentStatus: "", history: [],
+  contractStatus: "", contractLink: "", msFirstOffice: "", msAAJI: "", msFirstClosing: "",
+  agentCode: "", agentStatus: "", history: [],
   ...over,
 });
 

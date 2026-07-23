@@ -92,6 +92,9 @@ export type Candidate = {
   joinDate: string;
   contractStatus: string;
   contractLink: string;
+  msFirstOffice: string;
+  msAAJI: string;
+  msFirstClosing: string;
   agentCode: string;
   agentStatus: string;
   history: HistoryEntry[];
@@ -137,6 +140,9 @@ export type CandidateRow = {
   join_date: string | null;
   contract_status: string | null;
   contract_link: string | null;
+  ms_first_office: string | null;
+  ms_aaji: string | null;
+  ms_first_closing: string | null;
   agent_code: string | null;
   agent_status: string | null;
   history: HistoryEntry[] | null;
@@ -184,6 +190,9 @@ export function rowToCandidate(r: CandidateRow): Candidate {
     joinDate: s(r.join_date),
     contractStatus: s(r.contract_status),
     contractLink: s(r.contract_link),
+    msFirstOffice: s(r.ms_first_office),
+    msAAJI: s(r.ms_aaji),
+    msFirstClosing: s(r.ms_first_closing),
     agentCode: s(r.agent_code),
     agentStatus: s(r.agent_status),
     history: Array.isArray(r.history) ? r.history : [],
